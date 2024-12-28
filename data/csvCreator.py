@@ -99,7 +99,7 @@ def process_match_log(file_path):
             match_data.append({
                 "set_number": i + 1,
                 "points_a": ", ".join(map(str, player1_scores)) if player1_scores else "",
-                "points_b": ", ".join(map(str, player2_scores)) if player2_scores else "",
+                "points_x": ", ".join(map(str, player2_scores)) if player2_scores else "",
                 "sets_to_win": sets_to_win,
                 "set_winner": set_winner or ""
             })
@@ -157,7 +157,7 @@ def process_file(file_path, skip_header):
                             "sets_to_win": set_data["sets_to_win"],
                             "set_winner": set_data["set_winner"],
                             "points_a": set_data["points_a"],
-                            "points_b": set_data["points_b"]
+                            "points_x": set_data["points_x"]
                         })
 
         return pd.DataFrame(all_match_data)
@@ -166,12 +166,19 @@ def process_file(file_path, skip_header):
         print(f"Errore durante la lettura del file {file_path}: {e}")
         return pd.DataFrame()
 
+import time
+
 def main():
     tournaments_dir = 'tournaments'
     output_file = 'file_output.csv'
 
     if os.path.exists(output_file):
-        os.remove(output_file)
+        try:
+            os.remove(output_file)
+        except PermissionError:
+            print(f"Il file {output_file} è in uso. Riprovo...")
+            time.sleep(1)  # Attendi un secondo e riprova
+            os.remove(output_file)
 
     if not os.path.exists(tournaments_dir):
         print(f"Errore: La cartella '{tournaments_dir}' non esiste.")
