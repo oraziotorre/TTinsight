@@ -20,6 +20,18 @@ def check_points_error(points_a, points_x):
         if abs(points_x[i] - points_x[i + 1]) > 1:
             return True
 
+    if points_a[-1] < 11 and points_x[-1] < 11:
+        return True
+    
+    if abs(points_a[-1] - points_x[-1]) < 2:
+        return True
+    
+    if points_a[-1] > 11 and points_x[-1] != points_a[-1] - 2:
+        return True
+    
+    if points_x[-1] > 11 and points_a[-1] != points_x[-1] - 2:
+        return True
+
     return False
 
 def process_match_log(file_path):
