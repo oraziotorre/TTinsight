@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 
+#Funzione per validare la correttezza dei punteggi inseriti nel csv
 def check_points_error(points_a, points_x):
-
     len_a = len(points_a)
     len_x = len(points_x)
 
@@ -22,15 +22,23 @@ def check_points_error(points_a, points_x):
 
     if points_a[-1] < 11 and points_x[-1] < 11:
         return True
-    
+
     if abs(points_a[-1] - points_x[-1]) < 2:
         return True
-    
+
     if points_a[-1] > 11 and points_x[-1] != points_a[-1] - 2:
         return True
-    
+
     if points_x[-1] > 11 and points_a[-1] != points_x[-1] - 2:
         return True
+
+    for i in range(1, len_a):
+        if points_a[i] > points_a[i - 1]:
+            if points_x[i] > points_x[i - 1]:
+                return True
+        elif points_x[i] > points_x[i - 1]:
+            if points_a[i] > points_a[i - 1]:
+                return True
 
     return False
 
