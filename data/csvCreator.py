@@ -31,10 +31,16 @@ def determine_sets_to_win(file_path):
                 player2_scores = eval(lines[2 + i * 2].strip())
 
                 # Conta i set vinti da ciascun giocatore
-                if 11 in player1_scores:
-                    player1_wins += 1
-                if 11 in player2_scores:
-                    player2_wins += 1
+                if any(score >= 11 for score in player1_scores):
+                    # Determina il vincitore in base all'ultimo punteggio
+                    if player1_scores[-1] > player2_scores[-1]:
+                        player1_wins += 1
+
+                elif any(score >= 11 for score in player2_scores):
+                    # Determina il vincitore in base all'ultimo punteggio
+                    if player2_scores[-1] > player1_scores[-1]:
+                        player2_wins += 1
+
             except Exception:
                 # Ignora errori nel parsing del set
                 continue
@@ -75,13 +81,18 @@ def process_match_log(file_path):
             try:
                 player1_scores = eval(lines[1 + i * 2].strip())
                 player2_scores = eval(lines[2 + i * 2].strip())
+                if any(score >= 11 for score in player1_scores):
+                    # Determina il vincitore in base all'ultimo punteggio
+                    if player1_scores[-1] > player2_scores[-1]:
+                        set_winner = f"{player1_wins}-{player2_wins}"
+                        player1_wins += 1
 
-                if 11 in player1_scores:
-                    player1_wins += 1
-                    set_winner = f"{player1_wins}-{player2_wins}"
-                elif 11 in player2_scores:
-                    player2_wins += 1
-                    set_winner = f"{player1_wins}-{player2_wins}"
+                elif any(score >= 11 for score in player2_scores):
+                    # Determina il vincitore in base all'ultimo punteggio
+                    if player2_scores[-1] > player1_scores[-1]:
+                        set_winner = f"{player1_wins}-{player2_wins}"
+                        player2_wins += 1
+
                 else:
                     # Caso di errore o nessun vincitore
                     set_winner = None
@@ -166,34 +177,6 @@ def process_file(file_path, skip_header):
         print(f"Errore durante la lettura del file {file_path}: {e}")
         return pd.DataFrame()
 
-import time
-
-def main():
-    tournaments_dir = 'tournaments'
-    output_file = 'file_output.csv'
-
-    if os.path.exists(output_file):
-        try:
-            os.remove(output_file)
-        except PermissionError:
-            print(f"Il file {output_file} è in uso. Riprovo...")
-            time.sleep(1)  # Attendi un secondo e riprova
-            os.remove(output_file)
-
-    if not os.path.exists(tournaments_dir):
-        print(f"Errore: La cartella '{tournaments_dir}' non esiste.")
-        return
-
-    first_file = True
-
-    for filename in os.listdir(tournaments_dir):
-        if filename.endswith('.tsv'):
-            file_path = os.path.join(tournaments_dir, filename)
-            data = process_file(file_path, not first_file)
-
-            if not data.empty:
-                data.to_csv(output_file, mode='a', index=False, header=first_file)
-                first_file = False
 
 if __name__ == '__main__':
     main()
