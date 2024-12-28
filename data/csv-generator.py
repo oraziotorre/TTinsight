@@ -78,6 +78,8 @@ def process_match_log(file_path):
                 "match_state": f"{match_state[0]}-{match_state[1]}"
             })
 
+            break
+
     return match_data
 
 
