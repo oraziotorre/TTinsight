@@ -26,12 +26,6 @@ def check_points_error(points_a, points_x):
     if abs(points_a[-1] - points_x[-1]) < 2:
         return True
 
-    if points_a[-1] > 11 and points_x[-1] != points_a[-1] - 2:
-        return True
-
-    if points_x[-1] > 11 and points_a[-1] != points_x[-1] - 2:
-        return True
-
     for i in range(1, len_a):
         if points_a[i] > points_a[i - 1]:
             if points_x[i] > points_x[i - 1]:
