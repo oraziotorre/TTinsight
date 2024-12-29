@@ -1,7 +1,8 @@
 import pandas as pd
 import os
+from collections import Counter
 
-#Funzione per validare la correttezza dei punteggi inseriti nel csv
+# Funzione per validare la correttezza dei punteggi inseriti nel csv
 def check_points_error(points_a, points_x):
     len_a = len(points_a)
     len_x = len(points_x)
@@ -36,6 +37,19 @@ def check_points_error(points_a, points_x):
 
     return False
 
+
+def points_transformer(points_a):
+    """
+    Consideriamo i punti fatti da un giocatore come il numero
+    di istanti in cui il giocatore si trova al punteggio i
+    """
+    frequency = Counter(points_a)
+
+    result = [frequency[val] for val in sorted(frequency.keys())]
+
+    return result
+
+
 def process_match_log(file_path):
     """
     Funzione per leggere il file di log dei match e analizzare i punteggi.
@@ -46,6 +60,8 @@ def process_match_log(file_path):
     num_sets = int(lines[0].strip())
     match_data = []  # Conterrà le righe dei dati dei set
     match_state = [0, 0]  # Stato iniziale dei set del match
+    match_points_a = 0  # numero totale di punteggio
+    match_points_x = 0  # numero totale di punteggio
 
     for i in range(num_sets):
         try:
@@ -56,6 +72,11 @@ def process_match_log(file_path):
             if check_points_error(points_a, points_x):
                 raise ValueError("Errore nei punteggi")
 
+            points_a = points_transformer(points_a)
+            points_x = points_transformer(points_x)
+            match_points_a += len(points_a)
+            match_points_x += len(points_x)
+
             # Aggiungi i dati del match con i punteggi in formato stringa
             match_data.append({
                 "points_a": ", ".join(map(str, points_a)) if points_a else "",
@@ -63,11 +84,10 @@ def process_match_log(file_path):
                 "match_state": f"{match_state[0]}-{match_state[1]}"
             })
 
-            if points_a[-1] > points_x[-1]:
+            if len(points_a) > len(points_x):
                 match_state[0] += 1  # A vince il set
             else:
                 match_state[1] += 1  # X vince il set
-
 
 
         except Exception as e:
@@ -77,11 +97,13 @@ def process_match_log(file_path):
                 "points_x": "",
                 "match_state": f"{match_state[0]}-{match_state[1]}"
             })
-
             break
 
-    return match_data
+    # Se il match ha punteggi troppo contrastanti allora lo tolgo dal dataset
+    if match_points_a < 7 or match_points_x < 7:
+        match_data = []
 
+    return match_data
 
 
 def process_file(file_path, skip_header):
@@ -109,24 +131,48 @@ def process_file(file_path, skip_header):
                     for set_data in match_data:
                         all_match_data.append({
                             "event_id": event_id,
-                            "doc": doc,
-                            "fmt": row['fmt'],
-                            "gender": row['gender'],
-                            "stage": row['stage'],
+                            "match_id": doc,
+                            "match_format": row['fmt'],
+                            "players_gender": row['gender'],
+                            "match_stage": row['stage'],
                             "stage_id": row['stage_id'],
-                            "duration": row['duration'],
-                            "start": row['start'],
-                            "a_id": row['a_id'],
-                            "b_id": row['b_id'],
-                            "x_id": row['x_id'],
-                            "y_id": row['y_id'],
-                            "res_a": row['res_a'],
-                            "res_x": row['res_x'],
-                            "scores": row['scores'],
-                            "sets_to_win": sets_to_win,
-                            "match_state": set_data["match_state"],
-                            "points_a": set_data["points_a"],
-                            "points_x": set_data["points_x"]
+                            "match_duration": row['duration'],
+                            "match_start_time": row['start'],
+                            "player_id": row['a_id'],
+                            "player_2_id": row['b_id'],
+                            "opponent_id": row['x_id'],
+                            "opponent_2_id": row['y_id'],
+                            "player_sets_won": row['res_a'],
+                            "opponent_sets_won": row['res_x'],
+                            "match_scores": row['scores'],
+                            "sets_required_to_win": sets_to_win,
+                            "current_match_state": set_data["match_state"],
+                            "player_points": set_data["points_a"],
+                            "opponent_points": set_data["points_x"],
+                            "match_result": 'W' if sets_to_win == row['res_a'] else 'L'
+                        })
+
+                        all_match_data.append({
+                            "event_id": event_id,
+                            "match_id": doc,
+                            "match_format": row['fmt'],
+                            "players_gender": row['gender'],
+                            "match_stage": row['stage'],
+                            "stage_id": row['stage_id'],
+                            "match_duration": row['duration'],
+                            "match_start_time": row['start'],
+                            "player_id": row['x_id'],
+                            "player_2_id": row['y_id'],
+                            "opponent_id": row['a_id'],
+                            "opponent_2_id": row['b_id'],
+                            "player_sets_won": row['res_x'],
+                            "opponent_sets_won": row['res_a'],
+                            "match_scores": ','.join(['-'.join(reversed(score.split('-'))) for score in row['scores'].split(',')]),
+                            "sets_required_to_win": sets_to_win,
+                            "current_match_state": '-'.join(reversed(set_data["match_state"].split('-'))),
+                            "player_points": set_data["points_x"],
+                            "opponent_points": set_data["points_a"],
+                            "match_result": 'W' if sets_to_win == row['res_x'] else 'L'
                         })
 
         return pd.DataFrame(all_match_data)
@@ -134,6 +180,7 @@ def process_file(file_path, skip_header):
     except Exception as e:
         print(f"Errore durante la lettura del file {file_path}: {e}")
         return pd.DataFrame()
+
 
 def main():
     tournaments_dir = 'tournaments'
@@ -156,6 +203,7 @@ def main():
             if not data.empty:
                 data.to_csv(output_file, mode='a', index=False, header=first_file)
                 first_file = False
+
 
 if __name__ == '__main__':
     main()
