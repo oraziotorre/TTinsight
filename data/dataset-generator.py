@@ -193,7 +193,6 @@ def process_file(file_path, skip_header):
                             "current_match_state": set_data["match_state"],
                             "player_points": set_data["points_a"],
                             "opponent_points": set_data["points_x"],
-                            "match_result": 'W' if sets_to_win == row['res_a'] else 'L'    # Aggiunta dell'etichetta di Vittoria o Sconfitta
                         })
 
                         # Aggiungo la riga dal punto di vista dell'avversario
@@ -217,7 +216,6 @@ def process_file(file_path, skip_header):
                             "current_match_state": '-'.join(reversed(set_data["match_state"].split('-'))),
                             "player_points": set_data["points_x"],
                             "opponent_points": set_data["points_a"],
-                            "match_result": 'W' if sets_to_win == row['res_x'] else 'L'  # Aggiunta dell'etichetta di Vittoria o Sconfitta
                         })
 
         return pd.DataFrame(all_match_data)
