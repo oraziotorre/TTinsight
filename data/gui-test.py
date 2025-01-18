@@ -99,25 +99,42 @@ class MainWindow(QWidget):
         gender_group = QGroupBox("")
         gender_layout = QVBoxLayout()
         gender_layout.setSpacing(10)
-        gender_layout.addWidget(QLabel("Gender_Utente:"))
+        gender_layout.addWidget(QLabel("Gender:"))
         gender_layout.addWidget(QRadioButton("M"))
         gender_layout.addWidget(QRadioButton("W"))
-        gender_layout.addWidget(QLabel("Gender_Avversario:"))
-        gender_layout.addWidget(QRadioButton("M"))
-        gender_layout.addWidget(QRadioButton("W"))
+        gender_layout.addWidget(QRadioButton("X"))
+        gender_layout.addWidget(QLabel(""))
         gender_group.setLayout(gender_layout)
         gender_group.setStyleSheet("color: white;")
 
-        # Sezione Is_Final_Set
         final_set_group = QGroupBox("")
         final_set_layout = QVBoxLayout()
-        final_set_layout.setSpacing(10)
-        final_set_layout.addWidget(QLabel("Is_Final_Set_Utente:"))
-        final_set_layout.addWidget(QRadioButton("True"))
-        final_set_layout.addWidget(QRadioButton("False"))
-        final_set_layout.addWidget(QLabel("Is_Final_Set_Avversario:"))
-        final_set_layout.addWidget(QRadioButton("True"))
-        final_set_layout.addWidget(QRadioButton("False"))
+
+        # Gruppo per Utente
+        utente_group = QGroupBox("")
+        utente_layout = QVBoxLayout()
+        utente_layout.setSpacing(5)
+        utente_layout.addWidget(QLabel("Player1"))
+        utente_layout.addWidget(QRadioButton("True"))
+        utente_layout.addWidget(QRadioButton("False"))
+        utente_group.setLayout(utente_layout)
+        utente_group.setStyleSheet("color: white;")
+
+        # Gruppo per Avversario
+        avversario_group = QGroupBox("")
+        avversario_layout = QVBoxLayout()
+        avversario_layout.setSpacing(5)
+        avversario_layout.addWidget(QLabel("Player2"))
+        avversario_layout.addWidget(QRadioButton("True"))
+        avversario_layout.addWidget(QRadioButton("False"))
+        avversario_group.setLayout(avversario_layout)
+        avversario_group.setStyleSheet("color: white;")
+
+        # Aggiungi i gruppi al layout finale
+        final_set_layout.addWidget(utente_group)
+        final_set_layout.addWidget(avversario_group)
+
+        # Settiamo il layout per il QGroupBox finale
         final_set_group.setLayout(final_set_layout)
         final_set_group.setStyleSheet("color: white;")
 
@@ -288,7 +305,7 @@ class MainWindow(QWidget):
             color: white;
             font-weight: bold;
             padding: 0;
-            border: 2px solid #1a1f23;
+            border: 4px solid black;
             width: 40px;
             height: 40px;
             border-radius: 20px;
@@ -303,7 +320,7 @@ class MainWindow(QWidget):
             color: white;
             font-weight: bold;
             padding: 0;
-            border: 2px solid #1a1f23;
+            border: 4px solid black;
             width: 40px;
             height: 40px;
             border-radius: 20px;
@@ -318,7 +335,7 @@ class MainWindow(QWidget):
             color: white;
             font-weight: bold;
             padding: 0;
-            border: 2px solid #1a1f23;
+            border: 4px solid black;
             width: 40px;
             height: 40px;
             border-radius: 20px;
@@ -400,8 +417,11 @@ class MainWindow(QWidget):
         y2_values = [score[1] for score in self.scores]
 
         # Disegna le linee
-        self.axes.plot(x_values, y1_values, label="Player 1", marker='o', color="#013FB3")
+        self.axes.plot(x_values, y1_values, label="Player 1", marker = 'o', color="#013FB3")
         self.axes.plot(x_values, y2_values, label="Player 2", marker='o', color="#FF6600")
+        self.axes.set_xticks(range(len(self.scores)))
+        max_score = max(max(y1_values), max(y2_values))
+        self.axes.set_yticks(range(0, max_score + 1, max(1, max_score // 5)))
 
         self.axes.set_title("Score Progression")
         self.axes.set_xlabel("Points Played")
@@ -415,7 +435,7 @@ class MainWindow(QWidget):
         """Incrementa il valore del primo numero"""
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
-        if value1 < 11 and value1 + value2 < 20:
+        if value1 < 11 and value1 + value2 < 20 and value2 < 11:
             self.label1.setText(str(value1 + 1))
             self.scores.append([value1 + 1, value2])
             self.update_graph()
@@ -424,7 +444,7 @@ class MainWindow(QWidget):
         """Incrementa il valore del secondo numero"""
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
-        if value2 < 11 and value1 + value2 < 20:
+        if value2 < 11 and value1 + value2 < 20 and value1 < 11:
             self.label2.setText(str(value2 + 1))
             self.scores.append([value1, value2 + 1])
             self.update_graph()
