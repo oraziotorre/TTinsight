@@ -16,7 +16,6 @@ class MainWindow(QWidget):
         self.setWindowTitle("Div con form e colori personalizzati")
         self.setGeometry(100, 100, 1400, 900)  # x, y, larghezza, altezza
 
-        # Layout orizzontale principale
         main_layout = QHBoxLayout()
 
         # Rimuovi margini e spaziatura dal layout principale
@@ -43,8 +42,8 @@ class MainWindow(QWidget):
         """)
 
         # Aggiungere i due "div" al layout principale
-        main_layout.addWidget(self.left_div)  # Div sinistro
-        main_layout.addWidget(self.right_div)  # Div destro
+        main_layout.addWidget(self.left_div)
+        main_layout.addWidget(self.right_div)
 
         # Imposta proporzioni dei "div"
         main_layout.setStretch(0, 2)  # Div sinistro occupa il 2/3 dello spazio
@@ -68,21 +67,20 @@ class MainWindow(QWidget):
             border-radius: 5px;
         """)
         form_layout = QHBoxLayout()
-        form_layout.setContentsMargins(10, 10, 10, 10)  # Margini interni
-        form_layout.setSpacing(20)  # Spaziatura tra i gruppi
-        self.add_form_sections(form_layout)  # Aggiungi le sezioni del form
+        form_layout.setContentsMargins(10, 10, 10, 10)
+        form_layout.setSpacing(20)
+        self.add_form_sections(form_layout)
         form_container.setLayout(form_layout)
 
         # Aggiungi il contenitore al layout principale
         layout.addWidget(form_container)
 
     def add_form_sections(self, layout):
-        """Aggiunge le sezioni del form al layout orizzontale"""
 
         # Sezione Gender
         gender_group = QGroupBox("")
         gender_layout = QVBoxLayout()
-        gender_layout.setSpacing(10)  # Spaziatura interna al gruppo
+        gender_layout.setSpacing(10)
         gender_layout.addWidget(QLabel("Gender_Utente:"))
         gender_layout.addWidget(QRadioButton("M"))
         gender_layout.addWidget(QRadioButton("W"))
@@ -90,12 +88,12 @@ class MainWindow(QWidget):
         gender_layout.addWidget(QRadioButton("M"))
         gender_layout.addWidget(QRadioButton("W"))
         gender_group.setLayout(gender_layout)
-        gender_group.setStyleSheet("color: white;")  # Testo bianco nel gruppo
+        gender_group.setStyleSheet("color: white;")
 
         # Sezione Is_Final_Set
         final_set_group = QGroupBox("")
         final_set_layout = QVBoxLayout()
-        final_set_layout.setSpacing(10)  # Spaziatura interna al gruppo
+        final_set_layout.setSpacing(10)
         final_set_layout.addWidget(QLabel("Is_Final_Set_Utente:"))
         final_set_layout.addWidget(QRadioButton("True"))
         final_set_layout.addWidget(QRadioButton("False"))
@@ -103,7 +101,7 @@ class MainWindow(QWidget):
         final_set_layout.addWidget(QRadioButton("True"))
         final_set_layout.addWidget(QRadioButton("False"))
         final_set_group.setLayout(final_set_layout)
-        final_set_group.setStyleSheet("color: white;")  # Testo bianco nel gruppo
+        final_set_group.setStyleSheet("color: white;")
 
         # Sezione Is_Final
         is_final_group = QGroupBox("")
@@ -112,20 +110,71 @@ class MainWindow(QWidget):
         is_final_layout.addWidget(QLabel("Is_Final:"))
         is_final_layout.addWidget(QRadioButton("True"))
         is_final_layout.addWidget(QRadioButton("False"))
-        is_final_layout.addWidget(QLabel(""))  # Spazio vuoto
+        is_final_layout.addWidget(QLabel(""))
 
         is_final_group.setLayout(is_final_layout)
-        is_final_group.setStyleSheet("color: white;")  # Testo bianco nel gruppo
+        is_final_group.setStyleSheet("color: white;")
 
-        # Aggiungere le sezioni al layout principale in orizzontale
+        # Bottone per mostrare/nascondere tutto
+        self.toggle_button = QPushButton("Mostra Tutto")
+        self.toggle_button.setStyleSheet(""" 
+            background-color: #768a89; 
+            color: white; 
+            font-size: 14px; 
+            border-radius: 5px;
+            padding: 5px;
+        """)
+
+        # Bottone di reset
+        self.reset_button = QPushButton("Reset")
+        self.reset_button.setStyleSheet(""" 
+            background-color: black; 
+            color: white; 
+            font-size: 14px; 
+            border-radius: 5px;
+            padding: 5px;
+        """)
+        self.reset_button.clicked.connect(self.reset_labels)
+
+        # Connessione del toggle_button per mostrare/nascondere i gruppi
+        self.toggle_button.clicked.connect(self.toggle_radio_buttons)
+
+        # Nascondi inizialmente i gruppi di radio button
+        gender_group.setVisible(False)
+        final_set_group.setVisible(False)
+        is_final_group.setVisible(False)
+
+        # Memorizza i gruppi in una lista per gestire visibilità
+        self.radio_groups = [gender_group, final_set_group, is_final_group]
+
+        # Layout per i bottoni di "Mostra Tutto" e "Reset"
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.toggle_button)
+        button_layout.addWidget(self.reset_button)
+
+        # Aggiungere i gruppi e i bottoni al layout
         layout.addWidget(gender_group)
         layout.addWidget(final_set_group)
         layout.addWidget(is_final_group)
+        layout.addLayout(button_layout)
+
+    def toggle_radio_buttons(self):
+        """Mostra o nasconde i radio button"""
+        if self.radio_groups[0].isVisible():
+            for group in self.radio_groups:
+                group.setVisible(False)
+            self.toggle_button.setText("Mostra Tutto")
+        else:
+            for group in self.radio_groups:
+                group.setVisible(True)
+            self.toggle_button.setText("Nascondi Tutto")
 
     def add_bottom_div(self, layout):
-        """Aggiungi un altro div sotto il form con numeri al centro"""
 
-        # Nuovo div sotto il form con il colore specificato
+        if not hasattr(self, 'scores'):
+            self.scores = [[0, 0]]
+
+        # Codice esistente per la creazione di `bottom_div`
         bottom_div = QWidget()
         bottom_div.setStyleSheet(""" 
             background-color: #1a1f23;  /* Nuovo colore di sfondo */
@@ -133,22 +182,20 @@ class MainWindow(QWidget):
             border-radius: 5px;
             margin-top: 20px;
             padding: 10px;
-            border: none; /* Rimuovi eventuali bordi che potrebbero causare la linea */
+            border: none;
         """)
 
-        # Imposta un'altezza minima per il bottom_div in modo che non sparisca se vuoto
-        bottom_div.setMinimumHeight(100)  # Puoi cambiare il valore a seconda della tua esigenza
+        bottom_div.setMinimumHeight(100)
 
         # Layout per il nuovo div
         bottom_layout = QVBoxLayout()
-        bottom_layout.setContentsMargins(0, 0, 0, 0)  # Assicurati che non ci siano margini extra
-        bottom_layout.setSpacing(20)  # Impostiamo una spaziatura tra i widget
-        bottom_layout.setAlignment(Qt.AlignCenter)  # Centra tutto il contenuto (numeri e bottoni) verticalmente
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_layout.setSpacing(20)
+        bottom_layout.setAlignment(Qt.AlignCenter)
 
-        # Crea il div verticale
         vertical_div = QWidget()
         vertical_div.setStyleSheet(""" 
-            background-color: #1a1f23;  /* Colore di sfondo più scuro per il div verticale */
+            background-color: #1a1f23; 
             color: white;
             border-radius: 5px;
             padding: 10px;
@@ -156,39 +203,35 @@ class MainWindow(QWidget):
 
         # Layout verticale per il div
         vertical_layout = QVBoxLayout()
-        vertical_layout.setContentsMargins(0, 0, 0, 0)  # Rimuovi i margini
-        vertical_layout.setSpacing(10)  # Spaziatura tra gli elementi
-        vertical_layout.setAlignment(Qt.AlignCenter)  # Centra verticalmente e orizzontalmente
+        vertical_layout.setContentsMargins(0, 0, 0, 0)
+        vertical_layout.setSpacing(10)
+        vertical_layout.setAlignment(Qt.AlignCenter)
 
         # Crea il layout orizzontale per i numeri centrati
         horizontal_layout = QHBoxLayout()
-        horizontal_layout.setContentsMargins(0, 0, 0, 0)  # Rimuovi i margini
-        horizontal_layout.setAlignment(Qt.AlignCenter)  # Allineamento orizzontale centrato
+        horizontal_layout.setContentsMargins(0, 0, 0, 0)
+        horizontal_layout.setAlignment(Qt.AlignCenter)
 
-        # Crea i QLabel per i numeri
         self.label1 = QLabel("0")
         self.label2 = QLabel("0")
 
         self.label1.setStyleSheet(""" 
-                font-size: 200px;  /* Dimensione font enorme per il primo numero */
-                color: white;      /* Colore bianco per il testo */
+                font-size: 200px;
+                color: white;
             """)
         self.label2.setStyleSheet(""" 
-                        font-size: 200px;  /* Dimensione font enorme per il primo numero */
-                        color: white;      /* Colore bianco per il testo */
-                    """)
+                font-size: 200px;
+                color: white;
+            """)
 
-        # Appendi i QLabel al layout orizzontale
         horizontal_layout.addWidget(self.label1)
         horizontal_layout.addWidget(self.label2)
 
-        # Aggiungi il layout orizzontale al layout verticale
         vertical_layout.addLayout(horizontal_layout)
 
-        # Aggiungere un nuovo div sotto i numeri con tre bottoni
         button_div = QWidget()
         button_div.setStyleSheet(""" 
-            background-color: #1a1f23;  /* Sfondo simile a quello dei numeri */
+            background-color: #1a1f23; 
             padding: 10px;
             margin-bottom: 20px;
         """)
@@ -196,33 +239,29 @@ class MainWindow(QWidget):
         # Layout per i bottoni
         button_layout = QHBoxLayout()
         button_layout.setContentsMargins(0, 0, 0, 0)
-        button_layout.setAlignment(Qt.AlignCenter)  # Centra orizzontalmente i bottoni
+        button_layout.setAlignment(Qt.AlignCenter)
 
-        # Crea i bottoni a cerchio
-        plus_button1 = QPushButton("+")
-        plus_button2 = QPushButton("+")
-        reset_button = QPushButton("x")
-        back_button = QPushButton("←")
+        self.plus_button1 = QPushButton("+")
+        self.plus_button2 = QPushButton("+")
+        self.back_button = QPushButton("←")
 
-        for button in [plus_button1, plus_button2, reset_button, back_button]:
+        for button in [self.plus_button1, self.plus_button2, self.back_button]:
             button.setStyleSheet(""" 
-                background-color: #768a89;  /* Colore di sfondo */
-                color: white;  /* Testo bianco */
-                font-size: 20px;  /* Dimensione del testo più piccola */
-                padding: 0;  /* Rimuovi padding extra */
-                border: 2px solid #1a1f23;  /* Bordo del cerchio */
-                width: 60px;  /* Larghezza del bottone più piccola */
-                height: 60px;  /* Altezza del bottone più piccola */
-                border-radius: 30px;  /* Border radius per rendere il bottone circolare */
+                background-color: #768a89;
+                color: white;
+                font-size: 20px;
+                padding: 0;
+                border: 2px solid #1a1f23;
+                width: 60px;
+                height: 60px;
+                border-radius: 30px;
             """)
 
         # Aggiungi i bottoni nell'ordine specificato
-        button_layout.addWidget(plus_button1)
-        button_layout.addWidget(back_button)
-        button_layout.addWidget(reset_button)
-        button_layout.addWidget(plus_button2)
+        button_layout.addWidget(self.plus_button1)
+        button_layout.addWidget(self.back_button)
+        button_layout.addWidget(self.plus_button2)
 
-        # Aggiungi i bottoni al nuovo div
         button_div.setLayout(button_layout)
 
         # Aggiungi il div dei bottoni al layout verticale
@@ -234,9 +273,6 @@ class MainWindow(QWidget):
         # Aggiungi il div verticale al layout principale
         bottom_layout.addWidget(vertical_div)
 
-        # Aggiungi il grafico sotto i numeri
-        self.add_graph(bottom_layout)
-
         # Imposta il layout del bottom_div
         bottom_div.setLayout(bottom_layout)
 
@@ -244,117 +280,159 @@ class MainWindow(QWidget):
         layout.addWidget(bottom_div)
 
         # Connetti i bottoni alle funzioni
-        plus_button1.clicked.connect(self.increment_label1)
-        plus_button2.clicked.connect(self.increment_label2)
-        reset_button.clicked.connect(self.reset_labels)
-        back_button.clicked.connect(self.go_back)
+        self.plus_button1.clicked.connect(self.increment_label1)
+        self.plus_button2.clicked.connect(self.increment_label2)
+        self.back_button.clicked.connect(self.go_back)
+
+        #Layout per le probabilità
+        text_div = QWidget()
+        text_div.setStyleSheet(""" 
+            background-color: #1a1f23;  /* Colore di sfondo del div del testo */
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 0px solid
+        """)
+
+        text_layout = QVBoxLayout()
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(10)
+
+        # **Nuovo div per il testo "Probabilità di Vittoria" tra bottom_div e grafico**
+        text_div = QWidget()
+        text_div.setStyleSheet(""" 
+            background-color: #1a1f23;  /* Colore di sfondo del div del testo */
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 0px solid
+        """)
+
+        # Layout orizzontale per il testo
+        text_layout = QHBoxLayout()
+        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(10)
+
+        # Creiamo i QLabel per il testo allineato a sinistra
+        left_text = QLabel("Probabilità di Vittoria Utente: 50%  |  Probabilità di Perdita Utente: 50%")
+        left_text.setStyleSheet(""" 
+            color: white;
+            font-size: 14px;  /* Impostato per essere piccolo */
+            text-align: left;  /* Allineato a sinistra */
+            width: 50%;  /* Usa il 50% dello spazio disponibile */
+        """)
+
+        # Creiamo il QLabel per il testo centrato
+        center_text = QLabel("Probabilità di Vittoria Avversario: 50%  |  Probabilità di Perdita Avversario: 50%")
+        center_text.setStyleSheet(""" 
+            color: white;
+            font-size: 14px;  /* Impostato per essere piccolo */
+            text-align: center;  /* Allineato al centro */
+            width: 50%;  /* Usa il 50% dello spazio disponibile */
+        """)
+
+        # Aggiungiamo i QLabel al layout orizzontale
+        text_layout.addWidget(left_text)
+        text_layout.addWidget(center_text)
+
+        text_div.setLayout(text_layout)
+        layout.addWidget(text_div)
+
+        # Div del Grafico
+        graph_div = QWidget()
+        graph_div.setStyleSheet(""" 
+            background-color: #1a1f23;  /* Colore di sfondo del div grafico */
+            border-radius: 5px;
+            margin-top: 10px;
+            padding: 10px;
+        """)
+
+        # Layout per il div del grafico
+        graph_layout = QVBoxLayout()
+        graph_layout.setContentsMargins(0, 0, 0, 0)
+        graph_layout.setSpacing(10)
+
+        self.add_graph(graph_layout)
+        graph_div.setFixedHeight(350)
+        graph_div.setLayout(graph_layout)
+        layout.addWidget(graph_div)
 
     def add_graph(self, layout):
         """Aggiunge un grafico sotto i numeri"""
 
         # Crea il canvas del grafico
-        self.figure = plt.Figure(figsize=(8, 5), dpi=100)  # Dimensioni aumentate
+        self.figure = plt.Figure(figsize=(8, 5), dpi=100)
         self.canvas = FigureCanvas(self.figure)
         self.axes = self.figure.add_subplot(111)
 
         # Impostazioni iniziali del grafico
-        self.axes.set_title("Andamento dei Punti")
-        self.axes.set_xlabel("Tempo")
-        self.axes.set_ylabel("Punti")
+        self.update_graph()
 
-        # Linee per i punteggi dell'utente e dell'avversario
-        self.user_points, = self.axes.plot([], [], label="Utente", color='blue', lw=2)
-        self.opponent_points, = self.axes.plot([], [], label="Avversario", color='red', lw=2)
-
-        # Aggiungi la legenda
-        self.axes.legend()
-
-        # Imposta il layout del grafico nel layout principale
+        # Aggiungi il canvas al layout
         layout.addWidget(self.canvas)
 
-    from PyQt5.QtWidgets import QMessageBox
+    def update_graph(self):
+        """Aggiorna il grafico con i punteggi correnti"""
+        if not hasattr(self, 'scores'):  # Controlla che `self.scores` esista
+            self.scores = [[0, 0]]
+
+        self.axes.clear()
+
+        # Estrai i valori per l'asse X e Y
+        x_values = list(range(len(self.scores)))
+        y1_values = [score[0] for score in self.scores]
+        y2_values = [score[1] for score in self.scores]
+
+        # Disegna le linee
+        self.axes.plot(x_values, y1_values, label="Utente", marker='o')
+        self.axes.plot(x_values, y2_values, label="Avversario", marker='o')
+
+        self.axes.set_title("Punteggi")
+        self.axes.set_xlabel("Tentativi")
+        self.axes.set_ylabel("Punti")
+        self.axes.legend()
+
+        # Aggiorna il canvas
+        self.canvas.draw()
 
     def increment_label1(self):
-        """Incrementa il primo numero"""
-        current_value = int(self.label1.text())
-        current_value2 = int(self.label2.text())
-
-        # Se la somma dei due punteggi è minore di 11, si può incrementare
-        if current_value < 11 and current_value2 < 11:
-            self.label1.setText(str(current_value + 1))
-            self.scores.append([int(self.label1.text()), current_value2])
+        """Incrementa il valore del primo numero"""
+        value1 = int(self.label1.text())
+        value2 = int(self.label2.text())
+        if value1 < 11 and value1 + value2 < 20:
+            self.label1.setText(str(value1 + 1))
+            self.scores.append([value1 + 1, value2])
             self.update_graph()
-
-        # Controlla se un giocatore ha raggiunto 11
-        if current_value + 1 == 11:
-            self.show_victory_message("Utente")
-            self.disable_buttons()
 
     def increment_label2(self):
-        """Incrementa il secondo numero"""
-        current_value = int(self.label2.text())
-        current_value1 = int(self.label1.text())
-
-        # Se la somma dei due punteggi è minore di 11, si può incrementare
-        if current_value < 11 and current_value1 < 11:
-            self.label2.setText(str(current_value + 1))
-            self.scores.append([current_value1, int(self.label2.text())])
+        """Incrementa il valore del secondo numero"""
+        value1 = int(self.label1.text())
+        value2 = int(self.label2.text())
+        if value2 < 11 and value1 + value2 < 20:
+            self.label2.setText(str(value2 + 1))
+            self.scores.append([value1, value2 + 1])
             self.update_graph()
 
-        # Controlla se un giocatore ha raggiunto 11
-        if current_value + 1 == 11:
-            self.show_victory_message("Avversario")
-            self.disable_buttons()
-
-    def show_victory_message(self, winner):
-        """Mostra il messaggio di vittoria"""
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("Vittoria!")
-        msg.setText(f"Ha vinto {winner}!")
-        msg.exec_()
-
-    def disable_buttons(self):
-        """Disabilita i bottoni dopo la vittoria"""
-        for button in [self.plus_button1, self.plus_button2, self.reset_button, self.back_button]:
-            button.setEnabled(False)
-
     def reset_labels(self):
-        """Resetta entrambi i numeri"""
+        """Resetta entrambi i valori a zero"""
         self.label1.setText("0")
         self.label2.setText("0")
-        self.scores.append([0, 0])
+        self.scores = [[0, 0]]
         self.update_graph()
 
     def go_back(self):
-        """Torna indietro all'ultimo stato"""
+        """Torna indietro di un passo nei punteggi"""
         if len(self.scores) > 1:
-            self.scores.pop()  # Rimuovi l'ultimo punteggio
-            last_score = self.scores[-1]  # Prendi l'ultimo punteggio valido
+            self.scores.pop()
+            last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
             self.update_graph()
 
-    def update_graph(self):
-        """Aggiorna il grafico"""
-        # Estrai i punteggi dall'elenco
-        user_scores = [score[0] for score in self.scores]
-        opponent_scores = [score[1] for score in self.scores]
-
-        # Imposta i dati sulle linee
-        self.user_points.set_data(range(len(user_scores)), user_scores)
-        self.opponent_points.set_data(range(len(opponent_scores)), opponent_scores)
-
-        # Rendi il grafico dinamico
-        self.axes.relim()
-        self.axes.autoscale_view()
-
-        # Rende il grafico visibile
-        self.canvas.draw()
-
-
-# Avvio dell'applicazione
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    main_window = MainWindow()
+    main_window.show()
+    sys.exit(app.exec_())
