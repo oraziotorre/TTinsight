@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (
     QGraphicsScene, QMessageBox
 )
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSize
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
@@ -14,7 +15,14 @@ class MainWindow(QWidget):
 
         # Imposta dimensioni della finestra
         self.setWindowTitle("Div con form e colori personalizzati")
-        self.setGeometry(100, 100, 1400, 900)  # x, y, larghezza, altezza
+        self.setGeometry(100, 100, 1400, 700)  # x, y, larghezza, altezza
+
+        self.is_fullscreen = False
+
+        # Mostra la finestra a tutto schermo
+        self.showFullScreen()
+        self.is_fullscreen = True
+        self.setFocus()
 
         main_layout = QHBoxLayout()
 
@@ -46,7 +54,7 @@ class MainWindow(QWidget):
         main_layout.addWidget(self.right_div)
 
         # Imposta proporzioni dei "div"
-        main_layout.setStretch(0, 2)  # Div sinistro occupa il 2/3 dello spazio
+        main_layout.setStretch(0, 1)  # Div sinistro occupa il 2/3 dello spazio
         main_layout.setStretch(1, 1)  # Div destro occupa il 1/3 dello spazio
 
         # Imposta il layout principale nella finestra
@@ -54,6 +62,16 @@ class MainWindow(QWidget):
 
         # Crea la lista per i punteggi
         self.scores = [[0, 0]]  # Lista che contiene i punteggi precedenti
+
+    def keyPressEvent(self, event):
+        """Gestisce la pressione dei tasti"""
+        if event.key() == Qt.Key_Escape:
+            if self.is_fullscreen:
+                self.showNormal()  # Passa alla modalità finestra normale
+            else:
+                self.showFullScreen()  # Passa alla modalità fullscreen
+            # Inverte lo stato della finestra
+            self.is_fullscreen = not self.is_fullscreen
 
     def add_form_container(self, layout):
         """Aggiunge il contenitore per il form"""
@@ -180,7 +198,7 @@ class MainWindow(QWidget):
             background-color: #1a1f23;  /* Nuovo colore di sfondo */
             color: white;  /* Testo bianco */
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 5px;
             padding: 10px;
             border: none;
         """)
@@ -200,7 +218,7 @@ class MainWindow(QWidget):
             border-radius: 5px;
             padding: 10px;
         """)
-
+        bottom_div.setFixedHeight(450)
         # Layout verticale per il div
         vertical_layout = QVBoxLayout()
         vertical_layout.setContentsMargins(0, 0, 0, 0)
@@ -211,27 +229,45 @@ class MainWindow(QWidget):
         horizontal_layout = QHBoxLayout()
         horizontal_layout.setContentsMargins(0, 0, 0, 0)
         horizontal_layout.setAlignment(Qt.AlignCenter)
-
+        # Crea i QLabel
         self.label1 = QLabel("0")
         self.label2 = QLabel("0")
+        self.label3 = QLabel("-")
 
-        self.label1.setStyleSheet(""" 
-                font-size: 200px;
-                color: white;
-            """)
-        self.label2.setStyleSheet(""" 
-                font-size: 200px;
-                color: white;
-            """)
+        # Imposta larghezza fissa per ciascun QLabel
+        max_width = 240
+        self.label1.setFixedWidth(max_width)
+        self.label2.setFixedWidth(max_width)
+        self.label3.setFixedWidth(max_width)
+
+        # Aggiungi gli stili per tutte le etichette
+        self.label1.setStyleSheet("""
+            font-size: 170px;
+            color: white;
+        """)
+        self.label2.setStyleSheet("""
+            font-size: 170px;
+            color: white;
+        """)
+        self.label3.setStyleSheet("""                      
+            font-size: 170px;
+            color: white;
+        """)
+
+        # Allinea il testo al centro in ogni QLabel
+        self.label1.setAlignment(Qt.AlignCenter)
+        self.label2.setAlignment(Qt.AlignCenter)
+        self.label3.setAlignment(Qt.AlignCenter)
 
         horizontal_layout.addWidget(self.label1)
+        horizontal_layout.addWidget(self.label3)
         horizontal_layout.addWidget(self.label2)
 
         vertical_layout.addLayout(horizontal_layout)
 
         button_div = QWidget()
         button_div.setStyleSheet(""" 
-            background-color: #1a1f23; 
+            background-color: #1a1f23;
             padding: 10px;
             margin-bottom: 20px;
         """)
@@ -241,21 +277,55 @@ class MainWindow(QWidget):
         button_layout.setContentsMargins(0, 0, 0, 0)
         button_layout.setAlignment(Qt.AlignCenter)
 
-        self.plus_button1 = QPushButton("+")
-        self.plus_button2 = QPushButton("+")
+        self.plus_button1 = QPushButton("")
         self.back_button = QPushButton("←")
+        self.plus_button2 = QPushButton("")
 
-        for button in [self.plus_button1, self.plus_button2, self.back_button]:
-            button.setStyleSheet(""" 
-                background-color: #768a89;
-                color: white;
-                font-size: 20px;
-                padding: 0;
-                border: 2px solid #1a1f23;
-                width: 60px;
-                height: 60px;
-                border-radius: 30px;
-            """)
+                # Pulsante blu
+        self.plus_button1.setStyleSheet(""" 
+            background-color:#013FB3;
+            font-size: 15px;
+            color: white;
+            font-weight: bold;
+            padding: 0;
+            border: 2px solid #1a1f23;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            margin-right: 100px;
+            margin-left: 100px;
+        """)
+
+        # Pulsante rosso
+        self.plus_button2.setStyleSheet(""" 
+            background-color: #FF6600;
+            font-size: 15px;
+            color: white;
+            font-weight: bold;
+            padding: 0;
+            border: 2px solid #1a1f23;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            margin-right: 100px;
+            margin-left: 100px;
+        """)
+
+        # Pulsante verde
+        self.back_button.setStyleSheet(""" 
+            background-color:#000000;
+            font-size: 15px;
+            color: white;
+            font-weight: bold;
+            padding: 0;
+            border: 2px solid #1a1f23;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            margin-right: 100px;
+            margin-left: 100px;
+        """)
+
 
         # Aggiungi i bottoni nell'ordine specificato
         button_layout.addWidget(self.plus_button1)
@@ -284,62 +354,6 @@ class MainWindow(QWidget):
         self.plus_button2.clicked.connect(self.increment_label2)
         self.back_button.clicked.connect(self.go_back)
 
-        #Layout per le probabilità
-        text_div = QWidget()
-        text_div.setStyleSheet(""" 
-            background-color: #1a1f23;  /* Colore di sfondo del div del testo */
-            border-radius: 5px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 0px solid
-        """)
-
-        text_layout = QVBoxLayout()
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(10)
-
-        # **Nuovo div per il testo "Probabilità di Vittoria" tra bottom_div e grafico**
-        text_div = QWidget()
-        text_div.setStyleSheet(""" 
-            background-color: #1a1f23;  /* Colore di sfondo del div del testo */
-            border-radius: 5px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 0px solid
-        """)
-
-        # Layout orizzontale per il testo
-        text_layout = QHBoxLayout()
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(10)
-
-        # Creiamo i QLabel per il testo allineato a sinistra
-        left_text = QLabel("Probabilità di Vittoria Utente: 50%  |  Probabilità di Perdita Utente: 50%")
-        left_text.setStyleSheet(""" 
-            color: white;
-            font-size: 14px;  /* Impostato per essere piccolo */
-            text-align: left;  /* Allineato a sinistra */
-            width: 50%;  /* Usa il 50% dello spazio disponibile */
-        """)
-
-        # Creiamo il QLabel per il testo centrato
-        center_text = QLabel("Probabilità di Vittoria Avversario: 50%  |  Probabilità di Perdita Avversario: 50%")
-        center_text.setStyleSheet(""" 
-            color: white;
-            font-size: 14px;  /* Impostato per essere piccolo */
-            text-align: center;  /* Allineato al centro */
-            width: 50%;  /* Usa il 50% dello spazio disponibile */
-        """)
-
-        # Aggiungiamo i QLabel al layout orizzontale
-        text_layout.addWidget(left_text)
-        text_layout.addWidget(center_text)
-
-        text_div.setLayout(text_layout)
-        layout.addWidget(text_div)
-
         # Div del Grafico
         graph_div = QWidget()
         graph_div.setStyleSheet(""" 
@@ -355,7 +369,7 @@ class MainWindow(QWidget):
         graph_layout.setSpacing(10)
 
         self.add_graph(graph_layout)
-        graph_div.setFixedHeight(350)
+        graph_div.setFixedHeight(400)
         graph_div.setLayout(graph_layout)
         layout.addWidget(graph_div)
 
@@ -386,12 +400,12 @@ class MainWindow(QWidget):
         y2_values = [score[1] for score in self.scores]
 
         # Disegna le linee
-        self.axes.plot(x_values, y1_values, label="Utente", marker='o')
-        self.axes.plot(x_values, y2_values, label="Avversario", marker='o')
+        self.axes.plot(x_values, y1_values, label="Player 1", marker='o', color="#013FB3")
+        self.axes.plot(x_values, y2_values, label="Player 2", marker='o', color="#FF6600")
 
-        self.axes.set_title("Punteggi")
-        self.axes.set_xlabel("Tentativi")
-        self.axes.set_ylabel("Punti")
+        self.axes.set_title("Score Progression")
+        self.axes.set_xlabel("Points Played")
+        self.axes.set_ylabel("Points Won")
         self.axes.legend()
 
         # Aggiorna il canvas
