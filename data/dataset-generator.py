@@ -195,29 +195,6 @@ def process_file(file_path, skip_header):
                             "opponent_points": set_data["points_x"],
                         })
 
-                        # Aggiungo la riga dal punto di vista dell'avversario
-                        all_match_data.append({
-                            "event_id": event_id,
-                            "match_id": doc,
-                            "match_format": row['fmt'],
-                            "players_gender": row['gender'],
-                            "match_stage": row['stage'],
-                            "stage_id": row['stage_id'],
-                            "match_duration": row['duration'],
-                            "match_start_time": row['start'],
-                            "player_id": row['x_id'],
-                            "player_2_id": row['y_id'],
-                            "opponent_id": row['a_id'],
-                            "opponent_2_id": row['b_id'],
-                            "player_sets_won": row['res_x'],
-                            "opponent_sets_won": row['res_a'],
-                            "match_scores": ','.join(['-'.join(reversed(score.split('-'))) for score in row['scores'].split(',')]),
-                            "sets_required_to_win": sets_to_win,
-                            "current_match_state": '-'.join(reversed(set_data["match_state"].split('-'))),
-                            "player_points": set_data["points_x"],
-                            "opponent_points": set_data["points_a"],
-                        })
-
         return pd.DataFrame(all_match_data)
 
     except Exception as e:
