@@ -11,19 +11,19 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
 class MainWindow(QWidget):
+    is_going_back = False
     def __init__(self):
         super().__init__()
 
         # Imposta dimensioni della finestra
+        self.probabilities = None
         self.setWindowTitle("Div con form e colori personalizzati")
         self.setGeometry(100, 100, 1400, 700)  # x, y, larghezza, altezza
-
-        self.is_fullscreen = False
-
         # Mostra la finestra a tutto schermo
         self.showFullScreen()
         self.is_fullscreen = True
         self.setFocus()
+
 
         main_layout = QHBoxLayout()
 
@@ -446,9 +446,11 @@ class MainWindow(QWidget):
 
         # Calcola la probabilità di vincita con i punteggi correnti
         prob_value = self.prob(p, value1, value2)
-
+        if self.is_going_back == True:
+            del self.probabilities[-1]
+            self.is_going_back = False
         # Se la lista delle probabilità non esiste o è vuota, la inizializza
-        if not hasattr(self, 'probabilities') or not self.probabilities:
+        elif not hasattr(self, 'probabilities') or not self.probabilities:
             self.probabilities = [(value1 + value2, prob_value)]  # Aggiunge il primo valore
         else:
             self.probabilities.append((value1 + value2, prob_value))  # Aggiunge il valore corrente
@@ -478,20 +480,28 @@ class MainWindow(QWidget):
             self.axes_probability.plot(
                 [current_x, future_x],
                 [prob_value, prob_scenario1],
-                linestyle="--", color="green", label="Punto Player_1"
+                linestyle="--", color="green", label="Punto_Player_1"
             )
             self.axes_probability.plot(
                 [current_x, future_x],
                 [prob_value, prob_scenario2],
-                linestyle="--", color="red", label="Punto Player_2"
+                linestyle="--", color="red", label="Punto_Player_2"
             )
 
             # Aggiungi i pallini alle estremità delle linee tratteggiate
             self.axes_probability.scatter([future_x], [prob_scenario1], color="green", marker='o')
             self.axes_probability.scatter([future_x], [prob_scenario2], color="red", marker='o')
 
-        # Configurazione dell'asse
-        self.axes_probability.set_xticks(range(21))  # Punti da 0 a 10
+        # Calcolo della metà visibile (range dinamico)
+        total_points = value1 + value2
+        half_range = 10  # La metà del range visibile (ora è 10)
+        start_x = max(0, total_points - half_range // 2)
+        end_x = min(20, total_points + half_range // 2)
+
+        # Configurazione dell'asse (solo una porzione dei dati sarà visibile)
+        self.axes_probability.set_xlim(start_x, end_x)  # Rendi visibile la parte dinamica
+        self.axes_probability.set_xticks(range(start_x, end_x + 1))  # Imposta le tacche dell'asse X
+
         self.axes_probability.set_yticks([i * 0.1 for i in range(11)])  # Probabilità da 0 a 1 (step 0.1)
 
         # Titoli e etichette
@@ -563,12 +573,16 @@ class MainWindow(QWidget):
         """Torna indietro di un passo nei punteggi"""
         if len(self.scores) > 1:
             self.scores.pop()
-            self.probabilities.pop()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
-            self.update_graph()
+
+            # Pulizia del grafico prima di ridisegnarlo
+            self.axes_probability.clear()
+            self.is_going_back = True
+            # Ridiagno il grafico della probabilità
             self.update_probability_graph()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
