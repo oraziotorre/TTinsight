@@ -1,3 +1,4 @@
+import math
 import sys
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
@@ -48,6 +49,11 @@ class MainWindow(QWidget):
         self.right_div.setStyleSheet(""" 
             background-color: #2a2f33;  /* Sfondo grigio scuro */
         """)
+        right_layout = QVBoxLayout()  # Layout verticale per il contenuto del div destro
+        # Aggiungi il grafico delle percentuali al right_div
+        self.add_probability_graph(right_layout)
+        self.right_div.setLayout(right_layout)
+
 
         # Aggiungere i due "div" al layout principale
         main_layout.addWidget(self.left_div)
@@ -94,18 +100,6 @@ class MainWindow(QWidget):
         layout.addWidget(form_container)
 
     def add_form_sections(self, layout):
-
-        # Sezione Gender
-        gender_group = QGroupBox("")
-        gender_layout = QVBoxLayout()
-        gender_layout.setSpacing(10)
-        gender_layout.addWidget(QLabel("Gender:"))
-        gender_layout.addWidget(QRadioButton("M"))
-        gender_layout.addWidget(QRadioButton("W"))
-        gender_layout.addWidget(QRadioButton("X"))
-        gender_layout.addWidget(QLabel(""))
-        gender_group.setLayout(gender_layout)
-        gender_group.setStyleSheet("color: white;")
 
         final_set_group = QGroupBox("")
         final_set_layout = QVBoxLayout()
@@ -175,12 +169,11 @@ class MainWindow(QWidget):
         self.toggle_button.clicked.connect(self.toggle_radio_buttons)
 
         # Nascondi inizialmente i gruppi di radio button
-        gender_group.setVisible(False)
         final_set_group.setVisible(False)
         is_final_group.setVisible(False)
 
         # Memorizza i gruppi in una lista per gestire visibilità
-        self.radio_groups = [gender_group, final_set_group, is_final_group]
+        self.radio_groups = [final_set_group, is_final_group]
 
         # Layout per i bottoni di "Mostra Tutto" e "Reset"
         button_layout = QHBoxLayout()
@@ -188,7 +181,6 @@ class MainWindow(QWidget):
         button_layout.addWidget(self.reset_button)
 
         # Aggiungere i gruppi e i bottoni al layout
-        layout.addWidget(gender_group)
         layout.addWidget(final_set_group)
         layout.addWidget(is_final_group)
         layout.addLayout(button_layout)
@@ -404,6 +396,18 @@ class MainWindow(QWidget):
         # Aggiungi il canvas al layout
         layout.addWidget(self.canvas)
 
+    def add_probability_graph(self, layout):
+        """Aggiunge un grafico per la probabilità di vincere"""
+        self.figure_probability = plt.Figure(figsize=(8, 5), dpi=100)
+        self.canvas_probability = FigureCanvas(self.figure_probability)
+        self.axes_probability = self.figure_probability.add_subplot(111)
+
+        # Impostazioni iniziali del grafico della probabilità
+        self.update_probability_graph()
+
+        # Aggiungi il canvas al layout
+        layout.addWidget(self.canvas_probability)
+
     def update_graph(self):
         """Aggiorna il grafico con i punteggi correnti"""
         if not hasattr(self, 'scores'):  # Controlla che `self.scores` esista
@@ -431,39 +435,140 @@ class MainWindow(QWidget):
         # Aggiorna il canvas
         self.canvas.draw()
 
+    def update_probability_graph(self):
+        """Aggiorna il grafico con le probabilità correnti, includendo righe tratteggiate per scenari futuri"""
+        self.axes_probability.clear()
+
+        # Parametri iniziali
+        p = 0.5  # Probabilità di vincere un punto
+        value1 = int(self.label1.text())  # Punti vinti dal giocatore
+        value2 = int(self.label2.text())  # Punti vinti dall'avversario
+
+        # Calcola la probabilità di vincita con i punteggi correnti
+        prob_value = self.prob(p, value1, value2)
+
+        # Se la lista delle probabilità non esiste o è vuota, la inizializza
+        if not hasattr(self, 'probabilities') or not self.probabilities:
+            self.probabilities = [(value1 + value2, prob_value)]  # Aggiunge il primo valore
+        else:
+            self.probabilities.append((value1 + value2, prob_value))  # Aggiunge il valore corrente
+
+        # Estrai gli x e y per disegnare la linea e i punti
+        x_values = [item[0] for item in self.probabilities]  # Punti totali (value1 + value2)
+        y_values = [item[1] for item in self.probabilities]  # Probabilità calcolate
+
+        # Disegna la linea continua
+        self.axes_probability.plot(x_values, y_values, label="Probabilità", color="blue")
+
+        # Aggiungi i pallini per evidenziare i punti calcolati
+        self.axes_probability.scatter(x_values, y_values, color="blue", marker='o')
+
+        # Calcola le probabilità per gli scenari futuri
+        if value1 + value2 < 20 and value1 < 11 and value2 < 11:  # Solo se non siamo alla fine del gioco
+            # Scenario 1: Giocatore 1 vince il prossimo punto (value1 + 1, value2)
+            prob_scenario1 = self.prob(p, value1 + 1, value2)
+            # Scenario 2: Giocatore 2 vince il prossimo punto (value1, value2 + 1)
+            prob_scenario2 = self.prob(p, value1, value2 + 1)
+
+            # Coordinate per i due scenari
+            current_x = value1 + value2  # Ascissa attuale
+            future_x = current_x + 1  # Ascissa del futuro passo
+
+            # Disegna le linee tratteggiate per i due scenari
+            self.axes_probability.plot(
+                [current_x, future_x],
+                [prob_value, prob_scenario1],
+                linestyle="--", color="green", label="Punto Player_1"
+            )
+            self.axes_probability.plot(
+                [current_x, future_x],
+                [prob_value, prob_scenario2],
+                linestyle="--", color="red", label="Punto Player_2"
+            )
+
+            # Aggiungi i pallini alle estremità delle linee tratteggiate
+            self.axes_probability.scatter([future_x], [prob_scenario1], color="green", marker='o')
+            self.axes_probability.scatter([future_x], [prob_scenario2], color="red", marker='o')
+
+        # Configurazione dell'asse
+        self.axes_probability.set_xticks(range(21))  # Punti da 0 a 10
+        self.axes_probability.set_yticks([i * 0.1 for i in range(11)])  # Probabilità da 0 a 1 (step 0.1)
+
+        # Titoli e etichette
+        self.axes_probability.set_title(
+            f"Probabilità di Vincita (Punti Giocatore: {value1}, Punti Avversario: {value2})"
+        )
+        self.axes_probability.set_xlabel("Punti Totali (Giocatore 1 + Giocatore 2)")
+        self.axes_probability.set_ylabel("Probabilità")
+        self.axes_probability.legend()
+
+        # Aggiorna il canvas
+        self.canvas_probability.draw()
+
+    def prob(self, p, x, y):
+        """Funzione che calcola la probabilità di vincere un punto."""
+        # Somma della prima parte
+        sum_part1 = 0
+        for i in range(0, 10 - y):
+            sum_part1 += p ** (11 - x) * math.comb(10 + i - x, i) * (1 - p) ** i
+
+        # Seconda parte della formula
+        part2 = p ** (10 - x) * math.comb(20 - x - y, 10 - x) * (1 - p) ** (10 - y)
+        part2 *= (p ** 2) / (1 - 2 * p * (1 - p))
+
+        # Somma totale
+        total = sum_part1 + part2
+        return total
+
     def increment_label1(self):
         """Incrementa il valore del primo numero"""
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         if value1 < 11 and value1 + value2 < 20 and value2 < 11:
-            self.label1.setText(str(value1 + 1))
-            self.scores.append([value1 + 1, value2])
-            self.update_graph()
+            if value1 == 10:
+                self.label1.setText(str(value1 + 1))
+                self.scores.append([value1 + 1, value2])
+                self.update_probability_graph()
+            else:
+                self.label1.setText(str(value1 + 1))
+                self.scores.append([value1 + 1, value2])
+                self.update_graph()
+                self.update_probability_graph()
 
     def increment_label2(self):
-        """Incrementa il valore del secondo numero"""
+
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         if value2 < 11 and value1 + value2 < 20 and value1 < 11:
-            self.label2.setText(str(value2 + 1))
-            self.scores.append([value1, value2 + 1])
-            self.update_graph()
+            if value2 == 10:
+                self.label2.setText(str(value2 + 1))
+                self.scores.append([value1, value2 + 1])
+                self.update_probability_graph()
+            else:
+                self.label2.setText(str(value2 + 1))
+                self.scores.append([value1, value2 + 1])
+                self.update_graph()
+                self.update_probability_graph()
 
     def reset_labels(self):
         """Resetta entrambi i valori a zero"""
         self.label1.setText("0")
         self.label2.setText("0")
+        self.probabilities = []  # Vuota la lista
         self.scores = [[0, 0]]
         self.update_graph()
+        self.update_probability_graph()
 
     def go_back(self):
         """Torna indietro di un passo nei punteggi"""
         if len(self.scores) > 1:
             self.scores.pop()
+            self.probabilities.pop()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
             self.update_graph()
+            self.update_probability_graph()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
