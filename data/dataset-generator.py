@@ -191,7 +191,7 @@ def process_file(file_path, skip_header):
                             "match_scores": row['scores'],
                             "sets_required_to_win": sets_to_win,
                             "current_match_state": set_data["match_state"],
-                            "player_points": set_data["points_a"],
+                            "points_progression": set_data["points_a"],
                             "opponent_points": set_data["points_x"],
                         })
 
