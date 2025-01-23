@@ -492,11 +492,13 @@ class MainWindow(QWidget):
             self.axes_probability.scatter([future_x], [prob_scenario1], color="green", marker='o')
             self.axes_probability.scatter([future_x], [prob_scenario2], color="red", marker='o')
 
-        # Calcolo della metà visibile (range dinamico)
         total_points = value1 + value2
-        half_range = 10  # La metà del range visibile (ora è 10)
-        start_x = max(0, total_points - half_range // 2)
-        end_x = min(20, total_points + half_range // 2)
+        half_visible = 8  # Range minimo visibile
+        buffer = half_visible // 2  # Valore a cui iniziare ad espandere
+
+        # Determina il range dinamico
+        start_x = max(0, total_points - buffer)  # Espandi l'inizio solo dopo aver superato metà del range
+        end_x = min(20, start_x + half_visible)  # Mantieni sempre almeno 8 punti visibili
 
         # Configurazione dell'asse (solo una porzione dei dati sarà visibile)
         self.axes_probability.set_xlim(start_x, end_x)  # Rendi visibile la parte dinamica
@@ -576,11 +578,10 @@ class MainWindow(QWidget):
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
-
             # Pulizia del grafico prima di ridisegnarlo
             self.axes_probability.clear()
             self.is_going_back = True
-            # Ridiagno il grafico della probabilità
+            self.update_graph()
             self.update_probability_graph()
 
 
