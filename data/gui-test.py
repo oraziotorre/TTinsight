@@ -2,11 +2,9 @@ import math
 import sys
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QRadioButton, QGroupBox, QPushButton, QGraphicsView,
-    QGraphicsScene, QMessageBox
+    QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QRadioButton, QGroupBox, QPushButton
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QSize
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 
@@ -19,6 +17,8 @@ class MainWindow(QWidget):
         self.probabilities = None
         self.setWindowTitle("Div con form e colori personalizzati")
         self.setGeometry(100, 100, 1400, 700)  # x, y, larghezza, altezza
+
+
         # Mostra la finestra a tutto schermo
         self.showFullScreen()
         self.is_fullscreen = True
@@ -37,10 +37,10 @@ class MainWindow(QWidget):
             background-color: #2a2f33;  /* Sfondo grigio scuro */
             border-right: 2px solid black;
         """)
-        left_layout = QVBoxLayout()  # Layout verticale per il contenuto del div sinistro
+        left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignTop)  # Allinea il contenuto in alto
-        self.add_form_container(left_layout)  # Aggiungi il form contenitore
-        self.add_bottom_div(left_layout)  # Aggiungi il div sotto il form
+        self.add_form_container(left_layout)
+        self.add_bottom_div(left_layout)
 
         self.left_div.setLayout(left_layout)
 
@@ -49,8 +49,7 @@ class MainWindow(QWidget):
         self.right_div.setStyleSheet(""" 
             background-color: #2a2f33;  /* Sfondo grigio scuro */
         """)
-        right_layout = QVBoxLayout()  # Layout verticale per il contenuto del div destro
-        # Aggiungi il grafico delle percentuali al right_div
+        right_layout = QVBoxLayout()
         self.add_probability_graph(right_layout)
         self.right_div.setLayout(right_layout)
 
@@ -60,14 +59,12 @@ class MainWindow(QWidget):
         main_layout.addWidget(self.right_div)
 
         # Imposta proporzioni dei "div"
-        main_layout.setStretch(0, 1)  # Div sinistro occupa il 2/3 dello spazio
-        main_layout.setStretch(1, 1)  # Div destro occupa il 1/3 dello spazio
+        main_layout.setStretch(0, 1)
+        main_layout.setStretch(1, 1)
 
-        # Imposta il layout principale nella finestra
         self.setLayout(main_layout)
 
-        # Crea la lista per i punteggi
-        self.scores = [[0, 0]]  # Lista che contiene i punteggi precedenti
+        self.scores = [[0, 0]]
 
     def keyPressEvent(self, event):
         """Gestisce la pressione dei tasti"""
@@ -76,7 +73,6 @@ class MainWindow(QWidget):
                 self.showNormal()  # Passa alla modalità finestra normale
             else:
                 self.showFullScreen()  # Passa alla modalità fullscreen
-            # Inverte lo stato della finestra
             self.is_fullscreen = not self.is_fullscreen
 
     def add_form_container(self, layout):
@@ -95,8 +91,6 @@ class MainWindow(QWidget):
         form_layout.setSpacing(20)
         self.add_form_sections(form_layout)
         form_container.setLayout(form_layout)
-
-        # Aggiungi il contenitore al layout principale
         layout.addWidget(form_container)
 
     def add_form_sections(self, layout):
@@ -201,7 +195,6 @@ class MainWindow(QWidget):
         if not hasattr(self, 'scores'):
             self.scores = [[0, 0]]
 
-        # Codice esistente per la creazione di `bottom_div`
         bottom_div = QWidget()
         bottom_div.setStyleSheet(""" 
             background-color: #1a1f23;  /* Nuovo colore di sfondo */
@@ -213,8 +206,7 @@ class MainWindow(QWidget):
         """)
 
         bottom_div.setMinimumHeight(100)
-
-        # Layout per il nuovo div
+        bottom_div.setFixedHeight(450)
         bottom_layout = QVBoxLayout()
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setSpacing(20)
@@ -227,8 +219,6 @@ class MainWindow(QWidget):
             border-radius: 5px;
             padding: 10px;
         """)
-        bottom_div.setFixedHeight(450)
-        # Layout verticale per il div
         vertical_layout = QVBoxLayout()
         vertical_layout.setContentsMargins(0, 0, 0, 0)
         vertical_layout.setSpacing(10)
@@ -238,7 +228,6 @@ class MainWindow(QWidget):
         horizontal_layout = QHBoxLayout()
         horizontal_layout.setContentsMargins(0, 0, 0, 0)
         horizontal_layout.setAlignment(Qt.AlignCenter)
-        # Crea i QLabel
         self.label1 = QLabel("0")
         self.label2 = QLabel("0")
         self.label3 = QLabel("-")
@@ -249,7 +238,6 @@ class MainWindow(QWidget):
         self.label2.setFixedWidth(max_width)
         self.label3.setFixedWidth(max_width)
 
-        # Aggiungi gli stili per tutte le etichette
         self.label1.setStyleSheet("""
             font-size: 170px;
             color: white;
@@ -290,7 +278,6 @@ class MainWindow(QWidget):
         self.back_button = QPushButton("←")
         self.plus_button2 = QPushButton("")
 
-                # Pulsante blu
         self.plus_button1.setStyleSheet(""" 
             background-color:#013FB3;
             font-size: 15px;
@@ -305,7 +292,6 @@ class MainWindow(QWidget):
             margin-left: 100px;
         """)
 
-        # Pulsante rosso
         self.plus_button2.setStyleSheet(""" 
             background-color: #FF6600;
             font-size: 15px;
@@ -320,7 +306,6 @@ class MainWindow(QWidget):
             margin-left: 100px;
         """)
 
-        # Pulsante verde
         self.back_button.setStyleSheet(""" 
             background-color:#000000;
             font-size: 15px;
@@ -335,7 +320,6 @@ class MainWindow(QWidget):
             margin-left: 100px;
         """)
 
-
         # Aggiungi i bottoni nell'ordine specificato
         button_layout.addWidget(self.plus_button1)
         button_layout.addWidget(self.back_button)
@@ -343,22 +327,15 @@ class MainWindow(QWidget):
 
         button_div.setLayout(button_layout)
 
-        # Aggiungi il div dei bottoni al layout verticale
-        vertical_layout.addWidget(button_div)
 
-        # Imposta il layout verticale sul div principale
+        vertical_layout.addWidget(button_div)
         vertical_div.setLayout(vertical_layout)
 
-        # Aggiungi il div verticale al layout principale
+
         bottom_layout.addWidget(vertical_div)
-
-        # Imposta il layout del bottom_div
         bottom_div.setLayout(bottom_layout)
-
-        # Aggiungi il bottom_div al layout principale
         layout.addWidget(bottom_div)
 
-        # Connetti i bottoni alle funzioni
         self.plus_button1.clicked.connect(self.increment_label1)
         self.plus_button2.clicked.connect(self.increment_label2)
         self.back_button.clicked.connect(self.go_back)
@@ -392,8 +369,6 @@ class MainWindow(QWidget):
 
         # Impostazioni iniziali del grafico
         self.update_graph()
-
-        # Aggiungi il canvas al layout
         layout.addWidget(self.canvas)
 
     def add_probability_graph(self, layout):
@@ -402,10 +377,7 @@ class MainWindow(QWidget):
         self.canvas_probability = FigureCanvas(self.figure_probability)
         self.axes_probability = self.figure_probability.add_subplot(111)
 
-        # Impostazioni iniziali del grafico della probabilità
         self.update_probability_graph()
-
-        # Aggiungi il canvas al layout
         layout.addWidget(self.canvas_probability)
 
     def update_graph(self):
@@ -444,12 +416,17 @@ class MainWindow(QWidget):
         value1 = int(self.label1.text())  # Punti vinti dal giocatore
         value2 = int(self.label2.text())  # Punti vinti dall'avversario
 
-        # Calcola la probabilità di vincita con i punteggi correnti
-        prob_value = self.prob(p, value1, value2)
-        if self.is_going_back == True:
+        # Caso speciale: Se value1 == 11, la probabilità è 1
+        if value1 == 11:
+            prob_value = 1.0
+        elif value2 == 11:
+            prob_value = 0.0
+        else:
+            prob_value = self.prob(p, value1, value2)
+
+        if self.is_going_back:
             del self.probabilities[-1]
             self.is_going_back = False
-        # Se la lista delle probabilità non esiste o è vuota, la inizializza
         elif not hasattr(self, 'probabilities') or not self.probabilities:
             self.probabilities = [(value1 + value2, prob_value)]  # Aggiunge il primo valore
         else:
@@ -465,12 +442,25 @@ class MainWindow(QWidget):
         # Aggiungi i pallini per evidenziare i punti calcolati
         self.axes_probability.scatter(x_values, y_values, color="blue", marker='o')
 
+        # Aggiungi la percentuale sopra ogni pallino
+        for i, (x, y) in enumerate(zip(x_values, y_values)):
+            # Percentuale sopra ogni pallino
+            self.axes_probability.annotate(f"{y * 100:.4f}%", (x, y),
+                                           textcoords="offset points", xytext=(0, 10), ha='center', color="blue")
+
         # Calcola le probabilità per gli scenari futuri
         if value1 + value2 < 20 and value1 < 11 and value2 < 11:  # Solo se non siamo alla fine del gioco
-            # Scenario 1: Giocatore 1 vince il prossimo punto (value1 + 1, value2)
-            prob_scenario1 = self.prob(p, value1 + 1, value2)
-            # Scenario 2: Giocatore 2 vince il prossimo punto (value1, value2 + 1)
-            prob_scenario2 = self.prob(p, value1, value2 + 1)
+            if value1 == 10:
+                prob_scenario1 = 1
+                prob_scenario2 = self.prob(p, value1, value2 + 1)
+            elif value2 == 10:
+                prob_scenario1 = self.prob(p, value1 + 1, value2)
+                prob_scenario2 = 0
+            else:
+                # Scenario 1: Giocatore 1 vince il prossimo punto (value1 + 1, value2)
+                prob_scenario1 = self.prob(p, value1 + 1, value2)
+                # Scenario 2: Giocatore 2 vince il prossimo punto (value1, value2 + 1)
+                prob_scenario2 = self.prob(p, value1, value2 + 1)
 
             # Coordinate per i due scenari
             current_x = value1 + value2  # Ascissa attuale
@@ -491,6 +481,12 @@ class MainWindow(QWidget):
             # Aggiungi i pallini alle estremità delle linee tratteggiate
             self.axes_probability.scatter([future_x], [prob_scenario1], color="green", marker='o')
             self.axes_probability.scatter([future_x], [prob_scenario2], color="red", marker='o')
+
+            # Aggiungi la percentuale sopra ogni pallino per gli scenari futuri
+            self.axes_probability.annotate(f"{prob_scenario1 * 100:.4f}%", (future_x, prob_scenario1),
+                                           textcoords="offset points", xytext=(0, 10), ha='center', color="green")
+            self.axes_probability.annotate(f"{prob_scenario2 * 100:.4f}%", (future_x, prob_scenario2),
+                                           textcoords="offset points", xytext=(0, 10), ha='center', color="red")
 
         total_points = value1 + value2
         half_visible = 8  # Range minimo visibile
@@ -537,30 +533,22 @@ class MainWindow(QWidget):
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         if value1 < 11 and value1 + value2 < 20 and value2 < 11:
-            if value1 == 10:
-                self.label1.setText(str(value1 + 1))
-                self.scores.append([value1 + 1, value2])
-                self.update_probability_graph()
-            else:
-                self.label1.setText(str(value1 + 1))
-                self.scores.append([value1 + 1, value2])
-                self.update_graph()
-                self.update_probability_graph()
+            self.label1.setText(str(value1 + 1))
+            self.scores.append([value1 + 1, value2])
+            self.update_graph()
+            self.update_probability_graph()
+
+
 
     def increment_label2(self):
 
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         if value2 < 11 and value1 + value2 < 20 and value1 < 11:
-            if value2 == 10:
-                self.label2.setText(str(value2 + 1))
-                self.scores.append([value1, value2 + 1])
-                self.update_probability_graph()
-            else:
-                self.label2.setText(str(value2 + 1))
-                self.scores.append([value1, value2 + 1])
-                self.update_graph()
-                self.update_probability_graph()
+            self.label2.setText(str(value2 + 1))
+            self.scores.append([value1, value2 + 1])
+            self.update_graph()
+            self.update_probability_graph()
 
     def reset_labels(self):
         """Resetta entrambi i valori a zero"""
