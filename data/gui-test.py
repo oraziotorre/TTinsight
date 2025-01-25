@@ -22,13 +22,12 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 class MainWindow(QWidget):
     is_going_back = False
     points_progression = []
-    log_reg_values = [[0], 0]
-    lstm_values = [0, 0, 0]
+    lstm_values = [0, 0]
+    scores = [[0, 0]]
     def __init__(self):
         super().__init__()
 
-        self.model_logreg = joblib.load('models/LogReg.pkl')  # Carica il modello di regressione logistica
-        self.model_lstm = load_model('models/LSTMboolean+3.keras')  # Carica il modello LSTM
+        self.model_lstm = load_model('models/LSTM.keras')  # Carica il modello LSTM
 
         # Imposta dimensioni della finestra
         self.probabilities = None
@@ -39,7 +38,6 @@ class MainWindow(QWidget):
         self.showFullScreen()
         self.is_fullscreen = True
         self.setFocus()
-
 
         main_layout = QHBoxLayout()
 
@@ -78,19 +76,18 @@ class MainWindow(QWidget):
 
         self.setLayout(main_layout)
 
-        self.scores = [[0, 0]]
-        self.comeback_count = 0
 
     def pred1(self):
-        if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(self.log_reg_values[0]) > 3:
+        num_ones = self.points_progression.count(1)
+        num_zeros = self.points_progression.count(0)
+        if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(num_ones - num_zeros) > 3:
             print("Non possibile")
+            self.current_prob_label_left.setText(f"Punteggio Corrente: NAN")
         else:
             X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
                                   value=-1)
-
             # Creazione dell'array per le caratteristiche globali per LSTM
             X_global_lstm = np.array([self.lstm_values])
-
             # Predizione delle probabilità con il modello LSTM
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
 
@@ -103,101 +100,60 @@ class MainWindow(QWidget):
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
-
-            '''
-            # --- Predizione con Logistic Regression --
-            scaler_log_reg = StandardScaler()
-            X_seq_log_reg = np.array([self.points_progression])
-            X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
-            X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
-    
-            y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
-            y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
-    
-            # Stampa dei risultati per Logistic Regression
-            print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
-            print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
-            print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
-            print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
-            self.current_prob_label_right.setText(f"Probabilità Corrente: {y_pred_prob_log_reg[0][0]:.8f}%")
+            self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0]:.8f}%")
         
     def pred2(self):
-        X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
-                              value=-1)
+        points_progression_player1 = self.points_progression.copy()
+        points_progression_player1.append(1)
+        num_ones = points_progression_player1.count(1)
+        num_zeros = points_progression_player1.count(0)
+        if len(points_progression_player1) > 18 or len(points_progression_player1) < 7 or abs(num_ones - num_zeros) > 3:
+            print("Non possibile")
+            self.player1_prob_label_left.setText(f"Player1 fa punto: NAN")
+        else:
+            X_seq = pad_sequences([points_progression_player1], maxlen=18, padding='post', truncating='post',
+                                  value=-1)
+            # Creazione dell'array per le caratteristiche globali per LSTM
+            X_global_lstm = np.array([self.lstm_values])
+            # Predizione delle probabilità con il modello LSTM
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+            # Converte la probabilità in etichetta binaria per LSTM
+            y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-        # Creazione dell'array per le caratteristiche globali per LSTM
-        X_global_lstm = np.array([self.lstm_values])
+            # Stampa dei risultati per LSTM
+            print(f"Sequenza di Punti (LSTM): {points_progression_player1}")
+            print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
+            print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
+            print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
+            print("-" * 50)
+            self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0]:.8f}%")
 
-        # Predizione delle probabilità con il modello LSTM
-        y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
-
-        # Converte la probabilità in etichetta binaria per LSTM
-        y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
-
-        # Stampa dei risultati per LSTM
-        print(f"Sequenza di Punti (LSTM): {self.points_progression}")
-        print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
-        print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
-        print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
-        print("-" * 50)
-        self.player1_prob_label_left.setText(f"Probabilità Player_1: {y_pred_prob_lstm[0][0]:.8f}%")
-        
-        # --- Predizione con Logistic Regression ---
-
-        scaler_log_reg = StandardScaler()
-        X_seq_log_reg = np.array([self.points_progression])
-        X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
-        X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
-
-        y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
-        y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
-
-        # Stampa dei risultati per Logistic Regression
-        print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
-        print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
-        print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
-        print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
-        self.player1_prob_label_right.setText(f"Probabilità Player_1: {y_pred_prob_lstm[0][0]:.8f}%")
     
     def pred3(self):
+        points_progression_player2 = self.points_progression.copy()
+        points_progression_player2.append(0)
+        num_ones = points_progression_player2.count(1)
+        num_zeros = points_progression_player2.count(0)
+        if len(points_progression_player2) > 18 or len(points_progression_player2) < 7 or abs(num_ones - num_zeros) > 3:
+            print("Non possibile")
+            self.player2_prob_label_left.setText(f"Player2 fa punto: NAN")
+        else:
+            X_seq = pad_sequences([points_progression_player2], maxlen=18, padding='post', truncating='post',
+                                  value=-1)
+            # Creazione dell'array per le caratteristiche globali per LSTM
+            X_global_lstm = np.array([self.lstm_values])
+            # Predizione delle probabilità con il modello LSTM
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+            # Converte la probabilità in etichetta binaria per LSTM
+            y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-        X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
-                              value=-1)
-
-        # Creazione dell'array per le caratteristiche globali per LSTM
-        X_global_lstm = np.array([self.lstm_values])
-
-        # Predizione delle probabilità con il modello LSTM
-        y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
-
-        # Converte la probabilità in etichetta binaria per LSTM
-        y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
-
-        # Stampa dei risultati per LSTM
-        print(f"Sequenza di Punti (LSTM): {self.points_progression}")
-        print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
-        print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
-        print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
-        print("-" * 50)
-        self.player2_prob_label_left.setText(f"Probabilità Player_2: {y_pred_prob_lstm[0][0]:.8f}%")
-
-        # --- Predizione con Logistic Regression ---
-
-        scaler_log_reg = StandardScaler()
-        X_seq_log_reg = np.array([self.points_progression])
-        X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
-        X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
-
-        y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
-        y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
-
-        # Stampa dei risultati per Logistic Regression
-        print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
-        print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
-        print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
-        print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
-        self.player2_prob_label_right.setText(f"Probabilità Player_2: {y_pred_prob_lstm[0][0]:.8f}%")
-    '''
+            # Stampa dei risultati per LSTM
+            print(f"Sequenza di Punti (LSTM): {points_progression_player2}")
+            print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
+            print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
+            print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
+            print("-" * 50)
+            self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0]:.8f}%")
 
     def keyPressEvent(self, event):
         """Gestisce la pressione dei tasti"""
@@ -221,24 +177,21 @@ class MainWindow(QWidget):
         """)
         form_layout = QHBoxLayout()
         form_layout.setContentsMargins(10, 10, 10, 10)
-        form_layout.setSpacing(20)
+        form_layout.setSpacing(10)
         self.add_form_sections(form_layout)
         form_container.setLayout(form_layout)
         layout.addWidget(form_container)
 
     def add_form_sections(self, layout):
-        final_set_group = QGroupBox("")
-        final_set_layout = QVBoxLayout()
-
         # Gruppo per Utente
         utente_group = QGroupBox("")
         utente_layout = QVBoxLayout()
         utente_layout.setSpacing(5)
-        utente_layout.addWidget(QLabel("Final_Set_A"))
+        utente_layout.addWidget(QLabel("Final_Set_A", alignment=Qt.AlignCenter))  # Centrare il titolo
         self.utente_radio_true = QRadioButton("1")
         self.utente_radio_false = QRadioButton("0")
-        utente_layout.addWidget(self.utente_radio_true)
-        utente_layout.addWidget(self.utente_radio_false)
+        utente_layout.addWidget(self.utente_radio_true, alignment=Qt.AlignCenter)  # Centrare i radio button
+        utente_layout.addWidget(self.utente_radio_false, alignment=Qt.AlignCenter)
         utente_group.setLayout(utente_layout)
         utente_group.setStyleSheet("color: white;")
         self.utente_radio_true.toggled.connect(self.update_lstm_values)
@@ -247,47 +200,14 @@ class MainWindow(QWidget):
         avversario_group = QGroupBox("")
         avversario_layout = QVBoxLayout()
         avversario_layout.setSpacing(5)
-        avversario_layout.addWidget(QLabel("Final_Set_B"))
+        avversario_layout.addWidget(QLabel("Final_Set_B", alignment=Qt.AlignCenter))  # Centrare il titolo
         self.avversario_radio_true = QRadioButton("1")
         self.avversario_radio_false = QRadioButton("0")
-        avversario_layout.addWidget(self.avversario_radio_true)
-        avversario_layout.addWidget(self.avversario_radio_false)
+        avversario_layout.addWidget(self.avversario_radio_true, alignment=Qt.AlignCenter)  # Centrare i radio button
+        avversario_layout.addWidget(self.avversario_radio_false, alignment=Qt.AlignCenter)
         avversario_group.setLayout(avversario_layout)
         avversario_group.setStyleSheet("color: white;")
         self.avversario_radio_true.toggled.connect(self.update_lstm_values)
-
-        # Aggiungi i gruppi al layout finale
-        final_set_layout.addWidget(utente_group)
-        final_set_layout.addWidget(avversario_group)
-
-        # Settiamo il layout per il QGroupBox finale
-        final_set_group.setLayout(final_set_layout)
-        final_set_group.setStyleSheet("color: white;")
-
-        # Sezione Is_Final
-        is_final_group = QGroupBox("")
-        is_final_layout = QVBoxLayout()
-        is_final_layout.setSpacing(10)
-        is_final_layout.addWidget(QLabel("Is_Final:"))
-        self.is_final_radio_true = QRadioButton("1")
-        self.is_final_radio_false = QRadioButton("0")
-        is_final_layout.addWidget(self.is_final_radio_true)
-        is_final_layout.addWidget(self.is_final_radio_false)
-        is_final_layout.addWidget(QLabel(""))
-
-        is_final_group.setLayout(is_final_layout)
-        is_final_group.setStyleSheet("color: white;")
-        self.is_final_radio_true.toggled.connect(self.update_lstm_values)
-
-        # Bottone per mostrare/nascondere tutto
-        self.toggle_button = QPushButton("Mostra Tutto")
-        self.toggle_button.setStyleSheet(""" 
-            background-color: #768a89; 
-            color: white; 
-            font-size: 14px; 
-            border-radius: 5px;
-            padding: 5px;
-        """)
 
         # Bottone di reset
         self.reset_button = QPushButton("Reset")
@@ -300,44 +220,17 @@ class MainWindow(QWidget):
         """)
         self.reset_button.clicked.connect(self.reset_labels)
 
-        # Connessione del toggle_button per mostrare/nascondere i gruppi
-        self.toggle_button.clicked.connect(self.toggle_radio_buttons)
-
-        # Nascondi inizialmente i gruppi di radio button
-        final_set_group.setVisible(False)
-        is_final_group.setVisible(False)
-
-        # Memorizza i gruppi in una lista per gestire visibilità
-        self.radio_groups = [final_set_group, is_final_group]
-
-        # Layout per i bottoni di "Mostra Tutto" e "Reset"
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(self.toggle_button)
-        button_layout.addWidget(self.reset_button)
-
-        # Aggiungere i gruppi e i bottoni al layout
-        layout.addWidget(final_set_group)
-        layout.addWidget(is_final_group)
-        layout.addLayout(button_layout)
+        # Aggiungere i gruppi e il bottone al layout principale
+        layout.addWidget(utente_group, alignment=Qt.AlignCenter)  # Centrare il gruppo Final_Set_A
+        layout.addWidget(avversario_group, alignment=Qt.AlignCenter)  # Centrare il gruppo Final_Set_B
+        layout.addWidget(self.reset_button)  # Centrare il pulsante Reset
 
     def update_lstm_values(self):
         """Aggiorna i valori in lstm_values in base ai radio button selezionati"""
-        self.lstm_values[0] = 1 if self.is_final_radio_true.isChecked() else 0
-        self.lstm_values[1] = 1 if self.utente_radio_true.isChecked() else 0
-        self.lstm_values[2] = 1 if self.avversario_radio_true.isChecked() else 0
-
+        self.lstm_values[0] = 1 if self.utente_radio_true.isChecked() else 0
+        self.lstm_values[1] = 1 if self.avversario_radio_true.isChecked() else 0
         print(f"Updated lstm_values: {self.lstm_values}")
 
-    def toggle_radio_buttons(self):
-        """Mostra o nascondi i radio button"""
-        if self.radio_groups[0].isVisible():
-            for group in self.radio_groups:
-                group.setVisible(False)
-            self.toggle_button.setText("Mostra Tutto")
-        else:
-            for group in self.radio_groups:
-                group.setVisible(True)
-            self.toggle_button.setText("Nascondi Tutto")
 
     def add_bottom_div(self, layout):
 
@@ -509,24 +402,24 @@ class MainWindow(QWidget):
         layout.addWidget(graph_div)
 
     def add_right_div(self, layout):
-        # Creazione di un layout orizzontale principale
-        main_layout = QHBoxLayout()
+        # Creazione di un layout verticale principale
+        main_layout = QVBoxLayout()
 
-        # Creazione del primo div verticale (sinistra)
+        # Creazione del primo div (Probabilità LSTM)
         left_div = QWidget()
         left_div.setStyleSheet("""
             background-color: #1a1f23;
             border-radius: 5px;
-            margin-top: 60px;
+            margin-top: 10px;
             margin-bottom: 10px;
             padding: 10px;
             border: 0px solid;
         """)
         left_layout = QVBoxLayout()
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(10)
+        left_layout.setContentsMargins(10, 10, 10, 10)
+        left_layout.setSpacing(0)
 
-        # Titolo per le probabilità (a sinistra)
+        # Titolo per le probabilità LSTM
         title_label_left = QLabel("Probabilità LSTM")
         title_label_left.setAlignment(Qt.AlignCenter)
         title_label_left.setStyleSheet("""
@@ -535,14 +428,14 @@ class MainWindow(QWidget):
             font-weight: bold;
         """)
 
-        # Etichette delle probabilità (a sinistra)
-        current_prob_label_left = QLabel("Probabilità Corrente: 0.0%")
-        player1_prob_label_left = QLabel("Player 1 fa punto: 0.0%")
-        player2_prob_label_left = QLabel("Player 2 fa punto: 0.0%")
+        # Etichette delle probabilità LSTM
+        self.current_prob_label_left = QLabel("Probabilità Corrente: NAN")
+        self.player1_prob_label_left = QLabel("Player 1 fa punto: NAN")
+        self.player2_prob_label_left = QLabel("Player 2 fa punto: NAN")
 
-        # Aggiungo il titolo e le label al layout del div a sinistra
+        # Aggiungo il titolo e le label al layout del div LSTM
         left_layout.addWidget(title_label_left)
-        for label in [current_prob_label_left, player1_prob_label_left, player2_prob_label_left]:
+        for label in [self.current_prob_label_left, self.player1_prob_label_left, self.player2_prob_label_left]:
             label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("""
                 font-size: 14px;
@@ -552,23 +445,22 @@ class MainWindow(QWidget):
 
         left_div.setLayout(left_layout)
 
-        # Creazione del div centrale (già esistente)
+        # Creazione del secondo div (Probabilità Matematica)
         text_div = QWidget()
         text_div.setStyleSheet("""
             background-color: #1a1f23;
             border-radius: 5px;
-            margin-top: 60px;
+            margin-top: 10px;
             margin-bottom: 10px;
             padding: 10px;
             border: 0px solid;
         """)
 
-        # Layout verticale per il testo
         text_layout = QVBoxLayout()
-        text_layout.setContentsMargins(0, 0, 0, 0)
-        text_layout.setSpacing(10)
+        text_layout.setContentsMargins(10, 10, 10, 10)
+        text_layout.setSpacing(0)
 
-        # Titolo per le probabilità
+        # Titolo per le probabilità Matematiche
         title_label = QLabel("Probabilità Matematica")
         title_label.setAlignment(Qt.AlignCenter)
         title_label.setStyleSheet("""
@@ -577,12 +469,12 @@ class MainWindow(QWidget):
             font-weight: bold;
         """)
 
-        # Etichette delle probabilità
+        # Etichette delle probabilità Matematiche
         self.current_prob_label = QLabel("Probabilità Corrente: 0.0%")
         self.player1_prob_label = QLabel("Player 1 fa punto: 0.0%")
         self.player2_prob_label = QLabel("Player 2 fa punto: 0.0%")
 
-        # Aggiungo il titolo e le label al layout verticale
+        # Aggiungo il titolo e le label al layout del div Matematico
         text_layout.addWidget(title_label)
         for label in [self.current_prob_label, self.player1_prob_label, self.player2_prob_label]:
             label.setAlignment(Qt.AlignCenter)
@@ -594,47 +486,7 @@ class MainWindow(QWidget):
 
         text_div.setLayout(text_layout)
 
-        # Creazione del div destro (a destra)
-        right_div = QWidget()
-        right_div.setStyleSheet("""
-            background-color: #1a1f23;
-            border-radius: 5px;
-            margin-top: 60px;
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 0px solid;
-        """)
-        right_layout = QVBoxLayout()
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(10)
-
-        # Titolo per le probabilità (a destra)
-        title_label_right = QLabel("Probabilità Logistic Regression")
-        title_label_right.setAlignment(Qt.AlignCenter)
-        title_label_right.setStyleSheet("""
-            font-size: 18px;
-            color: #f0f0f0;
-            font-weight: bold;
-        """)
-
-        # Etichette delle probabilità (a destra)
-        current_prob_label_right = QLabel("Probabilità Corrente: 0.0%")
-        player1_prob_label_right = QLabel("Player 1 fa punto: 0.0%")
-        player2_prob_label_right = QLabel("Player 2 fa punto: 0.0%")
-
-        # Aggiungo il titolo e le label al layout del div a destra
-        right_layout.addWidget(title_label_right)
-        for label in [current_prob_label_right, player1_prob_label_right, player2_prob_label_right]:
-            label.setAlignment(Qt.AlignCenter)
-            label.setStyleSheet("""
-                font-size: 14px;
-                color: white;
-            """)
-            right_layout.addWidget(label)
-
-        right_div.setLayout(right_layout)
-
-        # Div inferiore - grafico (come nel codice originale)
+        # Div inferiore - grafico
         lower_div = QWidget()
         lower_div.setStyleSheet("""
             background-color: #1a1f23;
@@ -647,16 +499,15 @@ class MainWindow(QWidget):
         # Layout per il grafico
         lower_layout = QVBoxLayout()
         lower_layout.setContentsMargins(10, 10, 10, 10)
-        lower_layout.setSpacing(10)
+        lower_layout.setSpacing(0)
 
         # Aggiungere il grafico usando la funzione esistente
         self.add_probability_graph(lower_layout)
         lower_div.setLayout(lower_layout)
 
-        # Aggiungere i div al layout orizzontale principale
+        # Aggiungere i div al layout verticale principale
         main_layout.addWidget(left_div)
         main_layout.addWidget(text_div)
-        main_layout.addWidget(right_div)
 
         # Aggiungere il div inferiore per il grafico
         layout.addLayout(main_layout)
@@ -797,7 +648,7 @@ class MainWindow(QWidget):
             self.player2_prob_label.setText(f"Player 2 fa punto: {prob_scenario2:.8f}%")
 
         total_points = value1 + value2
-        half_visible = 8  # Range minimo visibile
+        half_visible = 5  # Range minimo visibile
         buffer = half_visible // 2  # Valore a cui iniziare ad espandere
 
         # Determina il range dinamico
@@ -839,36 +690,6 @@ class MainWindow(QWidget):
         total = sum_part1 + part2
         return total
 
-    def update_comeback_and_length(self):
-        """Aggiorna il comeback e la lunghezza in base a points_progression"""
-        print(f"Updating comeback and length. Current points_progression: {self.points_progression}")
-
-        self.log_reg_values[1] = len(self.points_progression)
-        print(f"Updated length (log_reg_values[1]): {self.log_reg_values[1]}")
-
-        if self.log_reg_values[1] == 1:
-            if self.points_progression[-1] == 0:
-                self.log_reg_values[0].append(-1)  # Aggiungi -1 alla lista
-            else:
-                self.log_reg_values[0].append(1)  # Aggiungi 1 alla lista
-        else:
-            # Controlliamo il valore corrente di comeback
-            last_value = self.points_progression[-1]
-            secondtolast_value = self.points_progression[-2]
-
-            if last_value == 1:
-                if last_value == secondtolast_value:
-                    self.log_reg_values[0].append(self.log_reg_values[0][-1] + 1)  # Incrementa l'ultimo valore
-                else:
-                    self.log_reg_values[0].append(1)  # Aggiungi 1 alla lista
-            elif last_value == 0:
-                if last_value == secondtolast_value:
-                    self.log_reg_values[0].append(self.log_reg_values[0][-1] - 1)  # Decrementa l'ultimo valore
-                else:
-                    self.log_reg_values[0].append(-1)  # Aggiungi -1 alla lista
-
-        print(f"Updated comeback (log_reg_values[0][-1]): {self.log_reg_values[0]}")
-
     def increment_label1(self):
         """Incrementa il valore del primo numero"""
         value1 = int(self.label1.text())
@@ -880,8 +701,9 @@ class MainWindow(QWidget):
             self.scores.append([value1 + 1, value2])
             self.points_progression.append(1)  # Aggiungi 1 per incrementare il comeback
             print(f"Appended 1 to points_progression: {self.points_progression}")
-            self.update_comeback_and_length()
             self.pred1()
+            self.pred2()
+            self.pred3()
             self.update_graph()
             self.update_probability_graph()
 
@@ -896,8 +718,9 @@ class MainWindow(QWidget):
             self.scores.append([value1, value2 + 1])
             self.points_progression.append(0)  # Aggiungi 0 per diminuire il comeback
             print(f"Appended 0 to points_progression: {self.points_progression}")
-            self.update_comeback_and_length()
             self.pred1()
+            self.pred2()
+            self.pred3()
             self.update_graph()
             self.update_probability_graph()
 
@@ -908,7 +731,6 @@ class MainWindow(QWidget):
         self.label2.setText("0")
         self.probabilities = []
         self.points_progression = []
-        self.log_reg_values = [[0], 0]  # Reset both comeback and length
         self.scores = [[0, 0]]
         self.pred1()
         print(f"points_progression reset: {self.points_progression}")
@@ -923,11 +745,9 @@ class MainWindow(QWidget):
             self.points_progression.pop()
             print(f"Removed last score. Current scores: {self.scores}")
             print(f"Removed last point from points_progression. Current points_progression: {self.points_progression}")
-            self.log_reg_values[1] = len(self.points_progression)
-            print(self.log_reg_values[1])
-            self.log_reg_values[0].pop()
-            print(self.log_reg_values[0])
             self.pred1()
+            self.pred2()
+            self.pred3()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
