@@ -80,7 +80,7 @@ class MainWindow(QWidget):
     def pred1(self):
         num_ones = self.points_progression.count(1)
         num_zeros = self.points_progression.count(0)
-        if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(num_ones - num_zeros) > 3:
+        if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
             print("Non possibile")
             self.current_prob_label_left.setText(f"Punteggio Corrente: NAN")
             return None
@@ -101,14 +101,14 @@ class MainWindow(QWidget):
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
-            self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0]:.8f}%")
+            self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
         
     def pred2(self):
         points_progression_player1 = self.points_progression.copy()
         points_progression_player1.append(1)
         num_ones = points_progression_player1.count(1)
         num_zeros = points_progression_player1.count(0)
-        if len(points_progression_player1) > 18 or len(points_progression_player1) < 7 or abs(num_ones - num_zeros) > 3:
+        if len(points_progression_player1) > 18 or len(points_progression_player1) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
             print("Non possibile")
             self.player1_prob_label_left.setText(f"Player1 fa punto: NAN")
             return None
@@ -128,7 +128,7 @@ class MainWindow(QWidget):
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
-            self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0]:.8f}%")
+            self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     
@@ -137,7 +137,7 @@ class MainWindow(QWidget):
         points_progression_player2.append(0)
         num_ones = points_progression_player2.count(1)
         num_zeros = points_progression_player2.count(0)
-        if len(points_progression_player2) > 18 or len(points_progression_player2) < 7 or abs(num_ones - num_zeros) > 3:
+        if len(points_progression_player2) > 18 or len(points_progression_player2) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
             print("Non possibile")
             self.player2_prob_label_left.setText(f"Player2 fa punto: NAN")
             return None
@@ -157,7 +157,7 @@ class MainWindow(QWidget):
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
-            self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0]:.8f}%")
+            self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     def keyPressEvent(self, event):
@@ -475,13 +475,14 @@ class MainWindow(QWidget):
         """)
 
         # Etichette delle probabilità Matematiche
-        self.current_prob_label = QLabel("Probabilità Corrente: 0.0%")
-        self.player1_prob_label = QLabel("Player 1 fa punto: 0.0%")
-        self.player2_prob_label = QLabel("Player 2 fa punto: 0.0%")
+        self.current_prob_label = QLabel("Probabilità Corrente: 50%")
+        self.current_prob_vant_label = QLabel("Probabilità Corrente: 50%")
+        self.player1_prob_label = QLabel("Player 1 fa punto: 50%")
+        self.player2_prob_label = QLabel("Player 2 fa punto: 50%")
 
         # Aggiungo il titolo e le label al layout del div Matematico
         text_layout.addWidget(title_label)
-        for label in [self.current_prob_label, self.player1_prob_label, self.player2_prob_label]:
+        for label in [self.current_prob_label,self.current_prob_vant_label,  self.player1_prob_label, self.player2_prob_label]:
             label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("""
                 font-size: 14px;
@@ -579,6 +580,7 @@ class MainWindow(QWidget):
         value2 = int(self.label2.text())  # Punti vinti dall'avversario
         lstm_scenario1 = None
         lstm_scenario2 = None
+        prob_vantaggio = None
 
         # Caso speciale: Se value1 == 11, la probabilità è 1
         if value1 == 11:
@@ -606,10 +608,12 @@ class MainWindow(QWidget):
         self.axes_probability.scatter(x_values, y_values, color="blue", marker='o')
 
         # Aggiungi la percentuale sopra ogni pallino
-        offset_increment = 12  # Inizia con un offset maggiore per evitare sovrapposizioni
-
+        offset_increment = 5  # Inizia con un offset maggiore per evitare sovrapposizioni
+        if value1 + value2 == 20:
+            prob_vantaggio = 1
         # Calcola le probabilità per gli scenari futuri
         if value1 + value2 < 20 and value1 < 11 and value2 < 11:  # Solo se non siamo alla fine del gioco
+            prob_vantaggio = self.prob_vant(p, value1, value2)
             if value1 == 10:
                 prob_scenario1 = 1
                 prob_scenario2 = self.prob(p, value1, value2 + 1)
@@ -626,6 +630,7 @@ class MainWindow(QWidget):
             current_x = value1 + value2  # Ascissa attuale
             future_x = current_x + 1  # Ascissa del futuro passo
 
+
             # Disegna le linee tratteggiate per i due scenari
             self.axes_probability.plot(
                 [current_x, future_x],
@@ -638,10 +643,6 @@ class MainWindow(QWidget):
                 linestyle="--", color="red", label="Punto_Player_2"
             )
 
-            # Gestire l'offset per evitare sovrapposizioni tra le annotazioni
-            offset_prob_scenario1 = (0, offset_increment)
-            offset_prob_scenario2 = (0, offset_increment)
-
             # Aggiungi le annotazioni per gli scenari
             if lstm_scenario1 is not None:
                 self.axes_probability.plot(
@@ -650,12 +651,14 @@ class MainWindow(QWidget):
                     linestyle="--", color="orange", label="Punto_Player_1_Lstm"
                 )
 
-                if abs(prob_scenario1 - lstm_scenario1) < 0.05:
+                if abs(prob_scenario1 - lstm_scenario1) < 0.1:
                     offset_prob_scenario1 = (0, offset_increment * 2)
+
+                # Aggiungi la percentuale a destra del pallino
                 y_offset = (lstm_scenario1 > prob_scenario1) * offset_increment * 2 or (
-                            prob_scenario1 > lstm_scenario1) * offset_increment * -2
-                self.axes_probability.annotate(f"{lstm_scenario1:.4f}%", (future_x, lstm_scenario1),
-                                               textcoords="offset points", xytext=(0, y_offset), ha='center',
+                        prob_scenario1 > lstm_scenario1) * offset_increment * -2
+                self.axes_probability.annotate(f"{lstm_scenario1:.4f}", (future_x, lstm_scenario1),
+                                               textcoords="offset points", xytext=(10, y_offset), ha='left',
                                                color="orange")
 
             if lstm_scenario2 is not None:
@@ -665,12 +668,14 @@ class MainWindow(QWidget):
                     linestyle="--", color="purple", label="Punto_Player_2_Lstm"
                 )
                 # Verifica se c'è sovrapposizione con il prob_scenario2
-                if abs(prob_scenario2 - lstm_scenario2) < 0.05:
+                if abs(prob_scenario2 - lstm_scenario2) < 0.1:
                     offset_prob_scenario2 = (0, offset_increment * 2)  # Aumenta l'offset
+
+                # Aggiungi la percentuale a destra del pallino
                 y_offset = (lstm_scenario2 > prob_scenario2) * offset_increment * 2 or (
-                            prob_scenario2 > lstm_scenario2) * offset_increment * -2
-                self.axes_probability.annotate(f"{lstm_scenario2:.4f}%", (future_x, lstm_scenario2),
-                                               textcoords="offset points", xytext=(0, y_offset), ha='center',
+                        prob_scenario2 > lstm_scenario2) * offset_increment * -2
+                self.axes_probability.annotate(f"{lstm_scenario2:.4f}", (future_x, lstm_scenario2),
+                                               textcoords="offset points", xytext=(10, y_offset), ha='left',
                                                color="purple")
 
             # Aggiungi i pallini alle estremità delle linee tratteggiate
@@ -679,13 +684,13 @@ class MainWindow(QWidget):
             self.axes_probability.scatter([future_x], [lstm_scenario1], color="orange", marker='o')
             self.axes_probability.scatter([future_x], [lstm_scenario2], color="purple", marker='o')
 
-            # Aggiungi la percentuale sopra ogni pallino per gli scenari futuri
-            self.axes_probability.annotate(f"{prob_scenario1:.4f}%", (future_x, prob_scenario1),
-                                           textcoords="offset points", xytext=(0, 10), ha='center', color="green")
-            self.axes_probability.annotate(f"{prob_scenario2:.4f}%", (future_x, prob_scenario2),
-                                           textcoords="offset points", xytext=(0, 10), ha='center', color="red")
-            self.player1_prob_label.setText(f"Player 1 fa punto: {prob_scenario1:.8f}%")
-            self.player2_prob_label.setText(f"Player 2 fa punto: {prob_scenario2:.8f}%")
+            # Aggiungi la percentuale a destra del pallino per gli scenari futuri
+            self.axes_probability.annotate(f"{prob_scenario1:.4f}", (future_x, prob_scenario1),
+                                           textcoords="offset points", xytext=(10,-3), ha='left', color="green")
+            self.axes_probability.annotate(f"{prob_scenario2:.4f}", (future_x, prob_scenario2),
+                                           textcoords="offset points", xytext=(10,-3), ha='left', color="red")
+            self.player1_prob_label.setText(f"Player 1 fa punto: {prob_scenario1 * 100:.4f}%")
+            self.player2_prob_label.setText(f"Player 2 fa punto: {prob_scenario2 * 100:.4f}%")
 
         # Altri calcoli e aggiornamenti
         total_points = value1 + value2
@@ -711,7 +716,11 @@ class MainWindow(QWidget):
         self.axes_probability.legend()
 
         # Aggiorna le label con le probabilità calcolate
-        self.current_prob_label.setText(f"Probabilità Corrente: {prob_value:.8f}%")
+        self.current_prob_label.setText(f"Probabilità Corrente: {prob_value * 100:.4f} %")
+        if prob_vantaggio != None:
+            self.current_prob_vant_label.setText(f"Probabilità Vantaggio: {prob_vantaggio * 100:.4f}%")
+        else:
+            self.current_prob_vant_label.setText(f"Probabilità Vantaggio: NAN")
 
         # Aggiorna il canvas
         self.canvas_probability.draw()
@@ -730,6 +739,14 @@ class MainWindow(QWidget):
         # Somma totale
         total = sum_part1 + part2
         return total
+
+    # Probabilità di arrivare 10-10
+
+    def prob_vant(self, p, x, y):
+
+        total = p ** (10 - x) * math.comb(20 - x - y, 10 - x) * (1 - p) ** (10 - y)
+        return total
+
 
     def increment_label1(self):
         """Incrementa il valore del primo numero"""
