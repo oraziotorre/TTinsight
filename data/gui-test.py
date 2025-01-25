@@ -2,6 +2,15 @@ import math
 import sys
 import joblib
 import numpy as np
+import os
+
+from keras.src.utils import pad_sequences
+from sklearn.preprocessing import StandardScaler
+
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+TF_ENABLE_ONEDNN_OPTS = 0
+import sklearn
+from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QRadioButton, QGroupBox, QPushButton
@@ -12,13 +21,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 
 class MainWindow(QWidget):
     is_going_back = False
-
+    points_progression = []
+    log_reg_values = [[0], 0]
+    lstm_values = [0, 0, 0]
     def __init__(self):
         super().__init__()
 
         self.model_logreg = joblib.load('models/LogReg.pkl')  # Carica il modello di regressione logistica
-
-        # self.model_lstm = load_model('models/LSTMboolean+3.keras')  # Carica il modello LSTM
+        self.model_lstm = load_model('models/LSTMboolean+3.keras')  # Carica il modello LSTM
 
         # Imposta dimensioni della finestra
         self.probabilities = None
@@ -69,23 +79,125 @@ class MainWindow(QWidget):
         self.setLayout(main_layout)
 
         self.scores = [[0, 0]]
-        self.points_progression = []
-        self.log_reg_values = [0, 0]
         self.comeback_count = 0
-        self.lstm_values = [0, 0, 0]
 
-    def predict(self):
+    def pred1(self):
+        if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(self.log_reg_values[0]) > 3:
+            print("Non possibile")
+        else:
+            X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
+                                  value=-1)
 
+            # Creazione dell'array per le caratteristiche globali per LSTM
+            X_global_lstm = np.array([self.lstm_values])
 
-        logreg_input = np.array(self.points_progression + self.log_reg_values).reshape(1,-1)
-        logreg_prob = self.model_logreg.predict_proba(logreg_input)[0]
-        print(f"LogReg Probabilities: {logreg_prob}")
+            # Predizione delle probabilità con il modello LSTM
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
 
-        '''
-        lstm_input = np.array(self.lstm_values + self.points_progression).reshape(1, -1)
-        lstm_prob = self.model_lstm.predict(lstm_input)
-        print(f"LSTM Probabilities: {lstm_prob}")
-        '''
+            # Converte la probabilità in etichetta binaria per LSTM
+            y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
+
+            # Stampa dei risultati per LSTM
+            print(f"Sequenza di Punti (LSTM): {self.points_progression}")
+            print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
+            print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
+            print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
+            print("-" * 50)
+
+            '''
+            # --- Predizione con Logistic Regression --
+            scaler_log_reg = StandardScaler()
+            X_seq_log_reg = np.array([self.points_progression])
+            X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
+            X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
+    
+            y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
+            y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
+    
+            # Stampa dei risultati per Logistic Regression
+            print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
+            print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
+            print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
+            print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
+            self.current_prob_label_right.setText(f"Probabilità Corrente: {y_pred_prob_log_reg[0][0]:.8f}%")
+        
+    def pred2(self):
+        X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
+                              value=-1)
+
+        # Creazione dell'array per le caratteristiche globali per LSTM
+        X_global_lstm = np.array([self.lstm_values])
+
+        # Predizione delle probabilità con il modello LSTM
+        y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+
+        # Converte la probabilità in etichetta binaria per LSTM
+        y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
+
+        # Stampa dei risultati per LSTM
+        print(f"Sequenza di Punti (LSTM): {self.points_progression}")
+        print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
+        print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
+        print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
+        print("-" * 50)
+        self.player1_prob_label_left.setText(f"Probabilità Player_1: {y_pred_prob_lstm[0][0]:.8f}%")
+        
+        # --- Predizione con Logistic Regression ---
+
+        scaler_log_reg = StandardScaler()
+        X_seq_log_reg = np.array([self.points_progression])
+        X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
+        X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
+
+        y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
+        y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
+
+        # Stampa dei risultati per Logistic Regression
+        print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
+        print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
+        print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
+        print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
+        self.player1_prob_label_right.setText(f"Probabilità Player_1: {y_pred_prob_lstm[0][0]:.8f}%")
+    
+    def pred3(self):
+
+        X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
+                              value=-1)
+
+        # Creazione dell'array per le caratteristiche globali per LSTM
+        X_global_lstm = np.array([self.lstm_values])
+
+        # Predizione delle probabilità con il modello LSTM
+        y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+
+        # Converte la probabilità in etichetta binaria per LSTM
+        y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
+
+        # Stampa dei risultati per LSTM
+        print(f"Sequenza di Punti (LSTM): {self.points_progression}")
+        print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
+        print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
+        print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
+        print("-" * 50)
+        self.player2_prob_label_left.setText(f"Probabilità Player_2: {y_pred_prob_lstm[0][0]:.8f}%")
+
+        # --- Predizione con Logistic Regression ---
+
+        scaler_log_reg = StandardScaler()
+        X_seq_log_reg = np.array([self.points_progression])
+        X_global_log_reg = scaler_log_reg.fit_transform([self.log_reg_values])
+        X_combined_log_reg = np.concatenate([X_seq_log_reg, X_global_log_reg], axis=1)
+
+        y_pred_prob_log_reg = self.model_logreg.predict_proba(X_combined_log_reg)[:, 1]
+        y_pred_log_reg = (y_pred_prob_log_reg > 0.5).astype(int)
+
+        # Stampa dei risultati per Logistic Regression
+        print(f"Sequenza di Punti (Log Reg): {self.points_progression}")
+        print(f"Caratteristiche Globali (Log Reg): {self.log_reg_values}")
+        print(f"Probabilità previste (Log Reg): {y_pred_prob_log_reg[0]:.4f}")
+        print(f"Predizione (Log Reg - classe): {y_pred_log_reg[0]}")
+        self.player2_prob_label_right.setText(f"Probabilità Player_2: {y_pred_prob_lstm[0][0]:.8f}%")
+    '''
 
     def keyPressEvent(self, event):
         """Gestisce la pressione dei tasti"""
@@ -415,7 +527,7 @@ class MainWindow(QWidget):
         left_layout.setSpacing(10)
 
         # Titolo per le probabilità (a sinistra)
-        title_label_left = QLabel("Probabilità Matematica")
+        title_label_left = QLabel("Probabilità LSTM")
         title_label_left.setAlignment(Qt.AlignCenter)
         title_label_left.setStyleSheet("""
             font-size: 18px;
@@ -497,7 +609,7 @@ class MainWindow(QWidget):
         right_layout.setSpacing(10)
 
         # Titolo per le probabilità (a destra)
-        title_label_right = QLabel("Probabilità Matematica")
+        title_label_right = QLabel("Probabilità Logistic Regression")
         title_label_right.setAlignment(Qt.AlignCenter)
         title_label_right.setStyleSheet("""
             font-size: 18px;
@@ -736,9 +848,9 @@ class MainWindow(QWidget):
 
         if self.log_reg_values[1] == 1:
             if self.points_progression[-1] == 0:
-                self.log_reg_values[0] = -1
+                self.log_reg_values[0].append(-1)  # Aggiungi -1 alla lista
             else:
-                self.log_reg_values[0] = 1
+                self.log_reg_values[0].append(1)  # Aggiungi 1 alla lista
         else:
             # Controlliamo il valore corrente di comeback
             last_value = self.points_progression[-1]
@@ -746,16 +858,16 @@ class MainWindow(QWidget):
 
             if last_value == 1:
                 if last_value == secondtolast_value:
-                    self.log_reg_values[0] += 1
+                    self.log_reg_values[0].append(self.log_reg_values[0][-1] + 1)  # Incrementa l'ultimo valore
                 else:
-                    self.log_reg_values[0] = 1
+                    self.log_reg_values[0].append(1)  # Aggiungi 1 alla lista
             elif last_value == 0:
                 if last_value == secondtolast_value:
-                    self.log_reg_values[0] -= 1
+                    self.log_reg_values[0].append(self.log_reg_values[0][-1] - 1)  # Decrementa l'ultimo valore
                 else:
-                    self.log_reg_values[0] = -1
+                    self.log_reg_values[0].append(-1)  # Aggiungi -1 alla lista
 
-        print(f"Updated comeback (log_reg_values[0]): {self.log_reg_values[0]}")
+        print(f"Updated comeback (log_reg_values[0][-1]): {self.log_reg_values[0]}")
 
     def increment_label1(self):
         """Incrementa il valore del primo numero"""
@@ -769,6 +881,7 @@ class MainWindow(QWidget):
             self.points_progression.append(1)  # Aggiungi 1 per incrementare il comeback
             print(f"Appended 1 to points_progression: {self.points_progression}")
             self.update_comeback_and_length()
+            self.pred1()
             self.update_graph()
             self.update_probability_graph()
 
@@ -784,6 +897,7 @@ class MainWindow(QWidget):
             self.points_progression.append(0)  # Aggiungi 0 per diminuire il comeback
             print(f"Appended 0 to points_progression: {self.points_progression}")
             self.update_comeback_and_length()
+            self.pred1()
             self.update_graph()
             self.update_probability_graph()
 
@@ -794,8 +908,9 @@ class MainWindow(QWidget):
         self.label2.setText("0")
         self.probabilities = []
         self.points_progression = []
-        self.log_reg_values = [0, 0]  # Reset both comeback and length
+        self.log_reg_values = [[0], 0]  # Reset both comeback and length
         self.scores = [[0, 0]]
+        self.pred1()
         print(f"points_progression reset: {self.points_progression}")
         self.update_graph()
         self.update_probability_graph()
@@ -808,7 +923,11 @@ class MainWindow(QWidget):
             self.points_progression.pop()
             print(f"Removed last score. Current scores: {self.scores}")
             print(f"Removed last point from points_progression. Current points_progression: {self.points_progression}")
-            self.update_comeback_and_length()
+            self.log_reg_values[1] = len(self.points_progression)
+            print(self.log_reg_values[1])
+            self.log_reg_values[0].pop()
+            print(self.log_reg_values[0])
+            self.pred1()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
@@ -823,5 +942,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
-    logreg_prob, lstm_prob = main_window.predict()
     sys.exit(app.exec_())
