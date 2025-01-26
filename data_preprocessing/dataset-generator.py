@@ -204,7 +204,7 @@ def process_file(file_path, skip_header):
 
 def main():
     tournaments_dir = '../data/tournaments'
-    output_file = 'raw_data.csv'
+    output_file = '../data/datasets/raw_dataset.csv'
 
     if os.path.exists(output_file):
         os.remove(output_file)

@@ -18,13 +18,73 @@
   </ul>
 </div>
 
-*This project is currently under active development. Features and functionality may change as the system evolves.*
+**This project is currently under active development. Features and functionality may change as the system evolves.**
 
 ---
 
-<div align="center">
-  <img src="https://github.com/oraziotorre/TTinsight/blob/e78b17592baadbb88d4463a9a69b7aa640565621/gui/TTinsight_GUI_explanation.png" width="600">
+## Repository Structure
+
+The general structure of the **TTinsight** project is as follows:
+
+```bash
+.
+├── data
+│   ├── additional_data
+│   │   ├── unavailable_score_tournaments
+│   │   │   ├── ...
+│   │   ├── players_metadata.tsv
+│   │   └── tournaments_metadata.tsv
+│   ├── datasets
+│   │   ├── cleaned_dataset.csv
+│   │   ├── raw_dataset.csv
+│   │   └── single_matches_dataset.csv
+│   ├── matches
+│   │   ├── ...
+│   ├── models
+│   │   ├── LogReg.pkl
+│   │   └── LSTM.keras
+│   └── tournaments
+│       ├── ...
+├── data_preprocessing
+│   ├── dataset-generator.py
+│   ├── downloader-scores.py
+│   └── TTinsight_DataPreprocessing.ipynb
+├── gui
+│   ├── gui-test.py
+│   └── TTinsight_GUI_explanation.png
+├── model_developmen
+│   └── TTinsight_ModelDevelopment.ipynb 
+├── README.md
+└── requirements.txt
+```
+
+<h3>Breve Descrizione dei File Principali</h3>
+
+<div style="font-family: monospace; padding: 10px; margin-bottom: 20px;">
+  <ul>
+    <li><strong>data/</strong>:
+      <ul>
+        <li><strong>additional_data</strong>: Contains player_metadata.tsv and tournament_metadata.tsv, which include additional information that will be implemented in the future in our project.</li>
+        <li><strong>datasets</strong>: Preprocessed or raw data used for training the model.</li>
+        <li><strong>matches</strong>: Data and information related to individual matches.</li>
+        <li><strong>models</strong>: Saved machine learning models.</li>
+        <li><strong>tournaments</strong>: Data related to various tournaments.</li>
+      </ul>
+    </li>
+    <li><strong>data_preprocessing/</strong>: Scripts used for cleaning and preparing data, as well as feature extraction.</li>
+    <li><strong>gui/</strong>: Graphical user interface files, providing a front-end for interacting with the system and visualizing predictions.</li>
+    <li><strong>model_development/</strong>: Contains the code for developing the machine learning model, including training and evaluation scripts.</li>
+  </ul>
 </div>
+
+
+---
+## Visual Representation
+
+<div align="center">
+  <img src="https://github.com/oraziotorre/TTinsight/blob/main/gui/TTinsight_GUI_explanation.png?raw=true" width="600">
+</div>
+
 
 *Figure: A preview of the TTinsight GUI in action.*
 

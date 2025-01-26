@@ -77,7 +77,7 @@ class MainWindow(QWidget):
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.current_prob_label_left.setText(f"Punteggio Corrente: NAN")
+            self.current_prob_label_left.setText(f"Probabilità Corrente: NAN")
             return None
         else:
             X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
@@ -93,7 +93,7 @@ class MainWindow(QWidget):
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
             '''
-            self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.current_prob_label_left.setText(f"Probabilità Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
 
     # Predizione quando ci troviamo nel caso in cui playerA fa punto a partire dal punteggio corrente
     def pred2(self):
@@ -105,7 +105,7 @@ class MainWindow(QWidget):
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.playerA_prob_label_left.setText(f"playerA fa punto: NAN")
+            self.playerA_prob_label_left.setText(f"Probabilità nel caso Player A fa punto: NAN")
             return None
         else:
             X_seq = pad_sequences([points_progression_playerA], maxlen=18, padding='post', truncating='post',
@@ -121,7 +121,7 @@ class MainWindow(QWidget):
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50) '''
 
-            self.playerA_prob_label_left.setText(f"Player A fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.playerA_prob_label_left.setText(f"Probabilità nel caso Player A fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     # Predizione quando ci troviamo nel caso in cui playerB fa punto a partire dal punteggio corrente
@@ -134,7 +134,7 @@ class MainWindow(QWidget):
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.playerB_prob_label_left.setText(f"Player B fa punto: NAN")
+            self.playerB_prob_label_left.setText(f"Probabilità nel caso Player B fa punto: NAN")
             return None
         else:
             X_seq = pad_sequences([points_progression_playerB], maxlen=18, padding='post', truncating='post',
@@ -150,7 +150,7 @@ class MainWindow(QWidget):
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
             '''
-            self.playerB_prob_label_left.setText(f"playerB fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.playerB_prob_label_left.setText(f"Probabilità nel caso Player B fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     # Gestisce la pressione dei tasti
@@ -430,8 +430,8 @@ class MainWindow(QWidget):
 
         # Etichette delle probabilità LSTM
         self.current_prob_label_left = QLabel("Probabilità Corrente: NAN")
-        self.playerA_prob_label_left = QLabel("Player A fa punto: NAN")
-        self.playerB_prob_label_left = QLabel("Player B fa punto: NAN")
+        self.playerA_prob_label_left = QLabel("Probabilità nel caso Player A fa punto: NAN")
+        self.playerB_prob_label_left = QLabel("Probabilità nel caso Player B fa punto: NAN")
 
         # Aggiungo il titolo e le label al layout del div LSTM
         left_layout.addWidget(title_label_left)
@@ -471,9 +471,9 @@ class MainWindow(QWidget):
 
         # Etichette delle probabilità Matematiche
         self.current_prob_label = QLabel("Probabilità Corrente: 50%")
-        self.current_prob_vant_label = QLabel("Probabilità Corrente: 50%")
-        self.playerA_prob_label = QLabel("Player A fa punto: 50%")
-        self.playerB_prob_label = QLabel("Player B fa punto: 50%")
+        self.current_prob_vant_label = QLabel("Probabilità Corrente di Vantaggio: 50%")
+        self.playerA_prob_label = QLabel("Probabilità nel caso Player A fa punto: 50%")
+        self.playerB_prob_label = QLabel("Probabilità nel caso Player B fa punto: 50%")
 
 
         text_layout.addWidget(title_label)
@@ -571,8 +571,8 @@ class MainWindow(QWidget):
         p = 0.5  # Probabilità di vincere un punto
         value1 = int(self.label1.text())  # Punti vinti dal giocatore
         value2 = int(self.label2.text())  # Punti vinti dall'avversario
-        lstm_scenario1 = None # Probabilità di vincita nel caso playerA fa punto
-        lstm_scenario2 = None # Probabilità di vincita nel caso playerB fa punto
+        lstm_scenario1 = None # Probabilità di vincita nel caso Player A fa punto
+        lstm_scenario2 = None # Probabilità di vincita nel caso Player B fa punto
 
         # Caso speciale: Se value1 == 11, la probabilità è 1
         if value1 == 11:
@@ -601,7 +601,7 @@ class MainWindow(QWidget):
         # Aggiungi i pallini per evidenziare i punti calcolati
         self.axes_probability.scatter(x_values, y_values, color="blue", marker='o')
 
-        if value1 + value2 == 20:
+        if value1 == 10 and value2 == 20:
             prob_vantaggio = 1
 
         # Calcola le probabilità per gli scenari futuri
@@ -678,8 +678,8 @@ class MainWindow(QWidget):
                                            textcoords="offset points", xytext=(10,-3), ha='left', color="green")
             self.axes_probability.annotate(f"{prob_scenario2:.4f}", (future_x, prob_scenario2),
                                            textcoords="offset points", xytext=(10,-3), ha='left', color="red")
-            self.playerA_prob_label.setText(f"Player A fa punto: {prob_scenario1 * 100:.4f}%")
-            self.playerB_prob_label.setText(f"Player B fa punto: {prob_scenario2 * 100:.4f}%")
+            self.playerA_prob_label.setText(f"Probabilità nel caso Player A fa punto: {prob_scenario1 * 100:.4f}%")
+            self.playerB_prob_label.setText(f"Probabilità nel caso Player B fa punto: {prob_scenario2 * 100:.4f}%")
 
         total_points = value1 + value2
         half_visible = 5  # Range minimo visibile
@@ -705,11 +705,7 @@ class MainWindow(QWidget):
 
         # Aggiorna le label con le probabilità calcolate
         self.current_prob_label.setText(f"Probabilità Corrente: {prob_value * 100:.4f} %")
-        if prob_vantaggio != None:
-            self.current_prob_vant_label.setText(f"Probabilità Vantaggio: {prob_vantaggio * 100:.4f}%")
-        else:
-            self.current_prob_vant_label.setText(f"Probabilità Vantaggio: NAN")
-
+        self.current_prob_vant_label.setText(f"Probabilità Corrente di Vantaggio: {prob_vantaggio * 100:.4f}%")
         # Aggiorna il canvas
         self.canvas_probability.draw()
 
