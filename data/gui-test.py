@@ -1,12 +1,8 @@
 import math
 import sys
-import joblib
 import numpy as np
 import os
-
 from keras.src.utils import pad_sequences
-from sklearn.preprocessing import StandardScaler
-
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 TF_ENABLE_ONEDNN_OPTS = 0
 import sklearn
@@ -40,8 +36,6 @@ class MainWindow(QWidget):
         self.setFocus()
 
         main_layout = QHBoxLayout()
-
-        # Rimuovi margini e spaziatura dal layout principale
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
@@ -53,7 +47,7 @@ class MainWindow(QWidget):
         """)
         left_layout = QVBoxLayout()
         self.add_form_container(left_layout)
-        self.add_bottom_div(left_layout)
+        self.add_left_div(left_layout)
 
         self.left_div.setLayout(left_layout)
 
@@ -73,10 +67,9 @@ class MainWindow(QWidget):
         # Imposta proporzioni dei "div"
         main_layout.setStretch(0, 1)
         main_layout.setStretch(1, 1)
-
         self.setLayout(main_layout)
 
-
+    # Predizione quando ci troviamo nel punteggio corrente
     def pred1(self):
         num_ones = self.points_progression.count(1)
         num_zeros = self.points_progression.count(0)
@@ -87,22 +80,19 @@ class MainWindow(QWidget):
         else:
             X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
                                   value=-1)
-            # Creazione dell'array per le caratteristiche globali per LSTM
             X_global_lstm = np.array([self.lstm_values])
-            # Predizione delle probabilità con il modello LSTM
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
-
-            # Converte la probabilità in etichetta binaria per LSTM
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Stampa dei risultati per LSTM
+            # Debug LSTM Corrente
             print(f"Sequenza di Punti (LSTM): {self.points_progression}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
             self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
-        
+
+    # Predizione quando ci troviamo nel caso in cui player1 fa punto a partire dal punteggio corrente
     def pred2(self):
         points_progression_player1 = self.points_progression.copy()
         points_progression_player1.append(1)
@@ -115,14 +105,11 @@ class MainWindow(QWidget):
         else:
             X_seq = pad_sequences([points_progression_player1], maxlen=18, padding='post', truncating='post',
                                   value=-1)
-            # Creazione dell'array per le caratteristiche globali per LSTM
             X_global_lstm = np.array([self.lstm_values])
-            # Predizione delle probabilità con il modello LSTM
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
-            # Converte la probabilità in etichetta binaria per LSTM
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Stampa dei risultati per LSTM
+            # Debug LSTM Player1
             print(f"Sequenza di Punti (LSTM): {points_progression_player1}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
@@ -131,7 +118,7 @@ class MainWindow(QWidget):
             self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
-    
+    # Predizione quando ci troviamo nel caso in cui player2 fa punto a partire dal punteggio corrente
     def pred3(self):
         points_progression_player2 = self.points_progression.copy()
         points_progression_player2.append(0)
@@ -144,14 +131,11 @@ class MainWindow(QWidget):
         else:
             X_seq = pad_sequences([points_progression_player2], maxlen=18, padding='post', truncating='post',
                                   value=-1)
-            # Creazione dell'array per le caratteristiche globali per LSTM
             X_global_lstm = np.array([self.lstm_values])
-            # Predizione delle probabilità con il modello LSTM
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
-            # Converte la probabilità in etichetta binaria per LSTM
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Stampa dei risultati per LSTM
+            # Debug LSTM Player2
             print(f"Sequenza di Punti (LSTM): {points_progression_player2}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
@@ -160,8 +144,8 @@ class MainWindow(QWidget):
             self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
+    # Gestisce la pressione dei tasti
     def keyPressEvent(self, event):
-        """Gestisce la pressione dei tasti"""
         if event.key() == Qt.Key_Escape:
             if self.is_fullscreen:
                 self.showNormal()  # Passa alla modalità finestra normale
@@ -169,24 +153,24 @@ class MainWindow(QWidget):
                 self.showFullScreen()  # Passa alla modalità fullscreen
             self.is_fullscreen = not self.is_fullscreen
 
+    # Contenitore form
     def add_form_container(self, layout):
-        """Aggiunge il contenitore per il form"""
-
         # Contenitore per il form
         form_container = QWidget()
         form_container.setStyleSheet(""" 
-            background-color: #1a1f23;  /* Colore di sfondo scuro per il contenitore */
-            color: white;  /* Testo bianco */
-            border: 0px solid #444;  /* Bordo sottile per il contenitore */
+            background-color: #1a1f23;  
+            color: white;  
+            border: 0px solid #444; 
             border-radius: 5px;
         """)
         form_layout = QHBoxLayout()
-        form_layout.setContentsMargins(10, 10, 10, 10)
+        form_layout.setContentsMargins(0, 0, 0, 0)
         form_layout.setSpacing(10)
         self.add_form_sections(form_layout)
         form_container.setLayout(form_layout)
         layout.addWidget(form_container)
 
+    # Raggruppamento dentro il form_container
     def add_form_sections(self, layout):
         # Gruppo per Utente
         utente_group = QGroupBox("")
@@ -230,20 +214,19 @@ class MainWindow(QWidget):
         layout.addWidget(avversario_group, alignment=Qt.AlignCenter)  # Centrare il gruppo Final_Set_B
         layout.addWidget(self.reset_button)  # Centrare il pulsante Reset
 
+    # Aggiorna i valori in lstm_values in base ai radio button selezionati
     def update_lstm_values(self):
-        """Aggiorna i valori in lstm_values in base ai radio button selezionati"""
         self.lstm_values[0] = 1 if self.utente_radio_true.isChecked() else 0
         self.lstm_values[1] = 1 if self.avversario_radio_true.isChecked() else 0
         print(f"Updated lstm_values: {self.lstm_values}")
 
-
-    def add_bottom_div(self, layout):
-
+    # Inserimento di un altro div al di sotto del contenitore dei form
+    def add_left_div(self, layout):
         if not hasattr(self, 'scores'):
             self.scores = [[0, 0]]
 
-        bottom_div = QWidget()
-        bottom_div.setStyleSheet(""" 
+        left_div = QWidget()
+        left_div.setStyleSheet(""" 
             background-color: #1a1f23;  /* Nuovo colore di sfondo */
             color: white;  /* Testo bianco */
             border-radius: 5px;
@@ -252,12 +235,12 @@ class MainWindow(QWidget):
             border: none;
         """)
 
-        bottom_div.setMinimumHeight(100)
-        bottom_div.setFixedHeight(450)
-        bottom_layout = QVBoxLayout()
-        bottom_layout.setContentsMargins(0, 0, 0, 0)
-        bottom_layout.setSpacing(20)
-        bottom_layout.setAlignment(Qt.AlignCenter)
+        left_div.setMinimumHeight(100)
+        left_div.setFixedHeight(450)
+        left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(20)
+        left_layout.setAlignment(Qt.AlignCenter)
 
         vertical_div = QWidget()
         vertical_div.setStyleSheet(""" 
@@ -379,9 +362,9 @@ class MainWindow(QWidget):
         vertical_div.setLayout(vertical_layout)
 
 
-        bottom_layout.addWidget(vertical_div)
-        bottom_div.setLayout(bottom_layout)
-        layout.addWidget(bottom_div)
+        left_layout.addWidget(vertical_div)
+        left_div.setLayout(left_layout)
+        layout.addWidget(left_div)
 
         self.plus_button1.clicked.connect(self.increment_label1)
         self.plus_button2.clicked.connect(self.increment_label2)
@@ -396,16 +379,17 @@ class MainWindow(QWidget):
             padding: 10px;
         """)
 
-        # Layout per il div del grafico
         graph_layout = QVBoxLayout()
         graph_layout.setContentsMargins(0, 0, 0, 0)
         graph_layout.setSpacing(10)
 
+        # Aggiungere il grafico usando la funzione esistente
         self.add_graph(graph_layout)
         graph_div.setFixedHeight(400)
         graph_div.setLayout(graph_layout)
         layout.addWidget(graph_div)
 
+    # Inserimento di un div destro
     def add_right_div(self, layout):
         # Creazione di un layout verticale principale
         main_layout = QVBoxLayout()
@@ -450,7 +434,7 @@ class MainWindow(QWidget):
 
         left_div.setLayout(left_layout)
 
-        # Creazione del secondo div (Probabilità Matematica)
+        # Creazione del secondo div per la probabilità matematica
         text_div = QWidget()
         text_div.setStyleSheet("""
             background-color: #1a1f23;
@@ -480,7 +464,7 @@ class MainWindow(QWidget):
         self.player1_prob_label = QLabel("Player 1 fa punto: 50%")
         self.player2_prob_label = QLabel("Player 2 fa punto: 50%")
 
-        # Aggiungo il titolo e le label al layout del div Matematico
+
         text_layout.addWidget(title_label)
         for label in [self.current_prob_label,self.current_prob_vant_label,  self.player1_prob_label, self.player2_prob_label]:
             label.setAlignment(Qt.AlignCenter)
@@ -492,7 +476,7 @@ class MainWindow(QWidget):
 
         text_div.setLayout(text_layout)
 
-        # Div inferiore - grafico
+        # Div inferiore che contiene il grafico
         lower_div = QWidget()
         lower_div.setStyleSheet("""
             background-color: #1a1f23;
@@ -500,9 +484,7 @@ class MainWindow(QWidget):
             margin: 10px;
             padding: 10px;
         """)
-        lower_div.setFixedHeight(500)  # Occupa circa il 55% dello spazio verticale
-
-        # Layout per il grafico
+        lower_div.setFixedHeight(500)
         lower_layout = QVBoxLayout()
         lower_layout.setContentsMargins(10, 10, 10, 10)
         lower_layout.setSpacing(0)
@@ -522,8 +504,8 @@ class MainWindow(QWidget):
         # Rimuovere lo spazio residuo per non occupare tutto lo spazio
         layout.addStretch()
 
+    # Aggiunge un grafo che mostra l'andamento della partita
     def add_graph(self, layout):
-        """Aggiunge un grafico sotto i numeri"""
 
         # Crea il canvas del grafico
         self.figure = plt.Figure(figsize=(8, 5), dpi=100)
@@ -534,8 +516,8 @@ class MainWindow(QWidget):
         self.update_graph()
         layout.addWidget(self.canvas)
 
+    # Aggiunge un grafico per la probabilità di vincere
     def add_probability_graph(self, layout):
-        """Aggiunge un grafico per la probabilità di vincere"""
         self.figure_probability = plt.Figure(figsize=(8, 5), dpi=100)
         self.canvas_probability = FigureCanvas(self.figure_probability)
         self.axes_probability = self.figure_probability.add_subplot(111)
@@ -578,15 +560,16 @@ class MainWindow(QWidget):
         p = 0.5  # Probabilità di vincere un punto
         value1 = int(self.label1.text())  # Punti vinti dal giocatore
         value2 = int(self.label2.text())  # Punti vinti dall'avversario
-        lstm_scenario1 = None
-        lstm_scenario2 = None
-        prob_vantaggio = None
+        lstm_scenario1 = None # Probabilità di vincita nel caso player1 fa punto
+        lstm_scenario2 = None # Probabilità di vincita nel caso player2 fa punto
 
         # Caso speciale: Se value1 == 11, la probabilità è 1
         if value1 == 11:
             prob_value = 1.0
+            prob_vantaggio = 0  # Probabilità di raggiungere i vantaggi
         elif value2 == 11:
             prob_value = 0.0
+            prob_vantaggio = 0  # Probabilità di raggiungere i vantaggi
         else:
             prob_value = self.prob(p, value1, value2)
 
@@ -607,12 +590,11 @@ class MainWindow(QWidget):
         # Aggiungi i pallini per evidenziare i punti calcolati
         self.axes_probability.scatter(x_values, y_values, color="blue", marker='o')
 
-        # Aggiungi la percentuale sopra ogni pallino
-        offset_increment = 5  # Inizia con un offset maggiore per evitare sovrapposizioni
         if value1 + value2 == 20:
             prob_vantaggio = 1
+
         # Calcola le probabilità per gli scenari futuri
-        if value1 + value2 < 20 and value1 < 11 and value2 < 11:  # Solo se non siamo alla fine del gioco
+        elif value1 + value2 < 20 and value1 < 11 and value2 < 11:  # Solo se non siamo alla fine del gioco
             prob_vantaggio = self.prob_vant(p, value1, value2)
             if value1 == 10:
                 prob_scenario1 = 1
@@ -643,23 +625,22 @@ class MainWindow(QWidget):
                 linestyle="--", color="red", label="Punto_Player_2"
             )
 
-            # Aggiungi le annotazioni per gli scenari
+            offset_increment = 5
+
+            # Annotazioni per gli scenari lstm
             if lstm_scenario1 is not None:
                 self.axes_probability.plot(
                     [current_x, future_x],
                     [prob_value, lstm_scenario1],
                     linestyle="--", color="orange", label="Punto_Player_1_Lstm"
                 )
-
                 if abs(prob_scenario1 - lstm_scenario1) < 0.1:
-                    offset_prob_scenario1 = (0, offset_increment * 2)
-
-                # Aggiungi la percentuale a destra del pallino
-                y_offset = (lstm_scenario1 > prob_scenario1) * offset_increment * 2 or (
-                        prob_scenario1 > lstm_scenario1) * offset_increment * -2
-                self.axes_probability.annotate(f"{lstm_scenario1:.4f}", (future_x, lstm_scenario1),
-                                               textcoords="offset points", xytext=(10, y_offset), ha='left',
-                                               color="orange")
+                    # Aggiungi la percentuale a destra del pallino
+                    y_offset = (lstm_scenario1 > prob_scenario1) * offset_increment * 2 or (
+                            prob_scenario1 > lstm_scenario1) * offset_increment * -2
+                    self.axes_probability.annotate(f"{lstm_scenario1:.4f}", (future_x, lstm_scenario1),
+                                                   textcoords="offset points", xytext=(10, y_offset), ha='left',
+                                                   color="orange")
 
             if lstm_scenario2 is not None:
                 self.axes_probability.plot(
@@ -667,16 +648,13 @@ class MainWindow(QWidget):
                     [prob_value, lstm_scenario2],
                     linestyle="--", color="purple", label="Punto_Player_2_Lstm"
                 )
-                # Verifica se c'è sovrapposizione con il prob_scenario2
                 if abs(prob_scenario2 - lstm_scenario2) < 0.1:
-                    offset_prob_scenario2 = (0, offset_increment * 2)  # Aumenta l'offset
-
-                # Aggiungi la percentuale a destra del pallino
-                y_offset = (lstm_scenario2 > prob_scenario2) * offset_increment * 2 or (
-                        prob_scenario2 > lstm_scenario2) * offset_increment * -2
-                self.axes_probability.annotate(f"{lstm_scenario2:.4f}", (future_x, lstm_scenario2),
-                                               textcoords="offset points", xytext=(10, y_offset), ha='left',
-                                               color="purple")
+                    # Aggiungi la percentuale a destra del pallino
+                    y_offset = (lstm_scenario2 > prob_scenario2) * offset_increment * 2 or (
+                            prob_scenario2 > lstm_scenario2) * offset_increment * -2
+                    self.axes_probability.annotate(f"{lstm_scenario2:.4f}", (future_x, lstm_scenario2),
+                                                   textcoords="offset points", xytext=(10, y_offset), ha='left',
+                                                   color="purple")
 
             # Aggiungi i pallini alle estremità delle linee tratteggiate
             self.axes_probability.scatter([future_x], [prob_scenario1], color="green", marker='o')
@@ -692,16 +670,15 @@ class MainWindow(QWidget):
             self.player1_prob_label.setText(f"Player 1 fa punto: {prob_scenario1 * 100:.4f}%")
             self.player2_prob_label.setText(f"Player 2 fa punto: {prob_scenario2 * 100:.4f}%")
 
-        # Altri calcoli e aggiornamenti
         total_points = value1 + value2
         half_visible = 5  # Range minimo visibile
         buffer = half_visible // 2  # Valore a cui iniziare ad espandere
 
         # Determina il range dinamico
-        start_x = max(0, total_points - buffer)  # Espandi l'inizio solo dopo aver superato metà del range
-        end_x = min(20, start_x + half_visible)  # Mantieni sempre almeno 8 punti visibili
+        start_x = max(0, total_points - buffer)  # Espande solo dopo aver superato metà del range
+        end_x = min(20, start_x + half_visible)  # Mantiene sempre almeno 8 punti visibili
 
-        # Configurazione dell'asse (solo una porzione dei dati sarà visibile)
+        # Configurazione dell'asse
         self.axes_probability.set_xlim(start_x, end_x)  # Rendi visibile la parte dinamica
         self.axes_probability.set_xticks(range(start_x, end_x + 1))  # Imposta le tacche dell'asse X
 
@@ -725,6 +702,7 @@ class MainWindow(QWidget):
         # Aggiorna il canvas
         self.canvas_probability.draw()
 
+    # Funzione matematica per calcolare la probabilità di vittoria
     def prob(self, p, x, y):
         """Funzione che calcola la probabilità di vincere un punto."""
         # Somma della prima parte
@@ -741,49 +719,40 @@ class MainWindow(QWidget):
         return total
 
     # Probabilità di arrivare 10-10
-
     def prob_vant(self, p, x, y):
-
         total = p ** (10 - x) * math.comb(20 - x - y, 10 - x) * (1 - p) ** (10 - y)
         return total
 
-
+    # Funzione per incrementare lo score del player1
     def increment_label1(self):
-        """Incrementa il valore del primo numero"""
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         print(f"Incrementing label1. Current values: label1 = {value1}, label2 = {value2}")
-
         if value1 < 11 and value1 + value2 < 20 and value2 < 11:
             self.label1.setText(str(value1 + 1))
             self.scores.append([value1 + 1, value2])
             self.points_progression.append(1)  # Aggiungi 1 per incrementare il comeback
             print(f"Appended 1 to points_progression: {self.points_progression}")
             self.pred1()
-            self.pred2()
-            self.pred3()
             self.update_graph()
             self.update_probability_graph()
 
+    # Funzione per incrementare lo score del player2
     def increment_label2(self):
-        """Incrementa il valore del secondo numero"""
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
         print(f"Incrementing label2. Current values: label1 = {value1}, label2 = {value2}")
-
         if value2 < 11 and value1 + value2 < 20 and value1 < 11:
             self.label2.setText(str(value2 + 1))
             self.scores.append([value1, value2 + 1])
-            self.points_progression.append(0)  # Aggiungi 0 per diminuire il comeback
+            self.points_progression.append(0)
             print(f"Appended 0 to points_progression: {self.points_progression}")
             self.pred1()
-            self.pred2()
-            self.pred3()
             self.update_graph()
             self.update_probability_graph()
 
+    # Funzione per poter reiniziare da capo
     def reset_labels(self):
-        """Resetta entrambi i valori a zero"""
         print("Resetting labels...")
         self.label1.setText("0")
         self.label2.setText("0")
@@ -795,17 +764,14 @@ class MainWindow(QWidget):
         self.update_graph()
         self.update_probability_graph()
 
+    # Funzione per poter tornare indietro di un'istanza
     def go_back(self):
-        """Torna indietro di un passo nei punteggi"""
-        print("Going back one step...")
         if len(self.scores) > 1:
-            self.scores.pop()
-            self.points_progression.pop()
+            self.scores.pop() # Rimozione dell'ultimo scores valore inserito
+            self.points_progression.pop() # Rimozione dell'ultimo elemento nella progressione dello score
             print(f"Removed last score. Current scores: {self.scores}")
             print(f"Removed last point from points_progression. Current points_progression: {self.points_progression}")
             self.pred1()
-            self.pred2()
-            self.pred3()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
             self.label2.setText(str(last_score[1]))
