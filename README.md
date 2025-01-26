@@ -57,7 +57,7 @@ The general structure of the **TTinsight** project is as follows:
 └── TTinsight_ModelDevelopment.ipynb
 ```
 
-<h3>Breve Descrizione dei File Principali</h3>
+<h3>Summary of some files</h3>
 
 <div style="font-family: monospace; padding: 10px; margin-bottom: 20px;">
   <ul>
