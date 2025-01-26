@@ -23,7 +23,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.model_lstm = load_model('models/LSTM.keras')  # Carica il modello LSTM
+        self.model_lstm = load_model('../data/models/LSTM.keras')  # Carica il modello LSTM
 
         # Imposta dimensioni della finestra
         self.probabilities = None
@@ -121,7 +121,7 @@ class MainWindow(QWidget):
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50) '''
 
-            self.playerA_prob_label_left.setText(f"playerA fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.playerA_prob_label_left.setText(f"Player A fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     # Predizione quando ci troviamo nel caso in cui playerB fa punto a partire dal punteggio corrente
@@ -134,7 +134,7 @@ class MainWindow(QWidget):
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.playerB_prob_label_left.setText(f"playerB fa punto: NAN")
+            self.playerB_prob_label_left.setText(f"Player B fa punto: NAN")
             return None
         else:
             X_seq = pad_sequences([points_progression_playerB], maxlen=18, padding='post', truncating='post',

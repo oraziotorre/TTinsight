@@ -163,7 +163,7 @@ def process_file(file_path, skip_header):
             event_id = row['event_id']
             doc = row['doc']
             filename_to_search = f"{event_id}_{doc}_console_logs.txt"
-            matches_dir = 'matches'
+            matches_dir = '../data/matches'
             file_path_in_matches = os.path.join(matches_dir, filename_to_search)
 
             if os.path.exists(file_path_in_matches):
@@ -203,7 +203,7 @@ def process_file(file_path, skip_header):
 
 
 def main():
-    tournaments_dir = 'tournaments'
+    tournaments_dir = '../data/tournaments'
     output_file = 'raw_data.csv'
 
     if os.path.exists(output_file):

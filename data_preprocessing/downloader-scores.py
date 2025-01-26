@@ -65,7 +65,7 @@ async def get_console_logs(page: Page, event_id: str, doc_code: str, n_games: in
 
 async def process_files(page: Page):
     """Elabora tutti i file TSV nella cartella data/tournaments."""
-    base_path = 'data/tournaments'
+    base_path = '../data/tournaments'
     for file_name in os.listdir(base_path):
         if file_name.endswith('.tsv'):
             file_path = os.path.join(base_path, file_name)

@@ -22,6 +22,14 @@
 
 ---
 
+<div align="center">
+  <img src="https://github.com/oraziotorre/TTinsight/blob/e78b17592baadbb88d4463a9a69b7aa640565621/gui/TTinsight_GUI_explanation.png" width="600">
+</div>
+
+*Figure: A preview of the TTinsight GUI in action.*
+
+---
+
 ## Prerequisites
 
 To run this project, you need to have the following installed:
