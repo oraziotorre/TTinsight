@@ -95,62 +95,62 @@ class MainWindow(QWidget):
             '''
             self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
 
-    # Predizione quando ci troviamo nel caso in cui player1 fa punto a partire dal punteggio corrente
+    # Predizione quando ci troviamo nel caso in cui playerA fa punto a partire dal punteggio corrente
     def pred2(self):
-        points_progression_player1 = self.points_progression.copy()
-        points_progression_player1.append(1)
-        num_ones = points_progression_player1.count(1)
-        num_zeros = points_progression_player1.count(0)
-        if len(points_progression_player1) > 18 or len(points_progression_player1) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
+        points_progression_playerA = self.points_progression.copy()
+        points_progression_playerA.append(1)
+        num_ones = points_progression_playerA.count(1)
+        num_zeros = points_progression_playerA.count(0)
+        if len(points_progression_playerA) > 18 or len(points_progression_playerA) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.player1_prob_label_left.setText(f"Player1 fa punto: NAN")
+            self.playerA_prob_label_left.setText(f"playerA fa punto: NAN")
             return None
         else:
-            X_seq = pad_sequences([points_progression_player1], maxlen=18, padding='post', truncating='post',
+            X_seq = pad_sequences([points_progression_playerA], maxlen=18, padding='post', truncating='post',
                                   value=-1)
             X_global_lstm = np.array([self.lstm_values])
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            ''' Debug LSTM Player1
-            print(f"Sequenza di Punti (LSTM): {points_progression_player1}")
+            ''' Debug LSTM playerA
+            print(f"Sequenza di Punti (LSTM): {points_progression_playerA}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50) '''
 
-            self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.playerA_prob_label_left.setText(f"playerA fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
-    # Predizione quando ci troviamo nel caso in cui player2 fa punto a partire dal punteggio corrente
+    # Predizione quando ci troviamo nel caso in cui playerB fa punto a partire dal punteggio corrente
     def pred3(self):
-        points_progression_player2 = self.points_progression.copy()
-        points_progression_player2.append(0)
-        num_ones = points_progression_player2.count(1)
-        num_zeros = points_progression_player2.count(0)
-        if len(points_progression_player2) > 18 or len(points_progression_player2) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
+        points_progression_playerB = self.points_progression.copy()
+        points_progression_playerB.append(0)
+        num_ones = points_progression_playerB.count(1)
+        num_zeros = points_progression_playerB.count(0)
+        if len(points_progression_playerB) > 18 or len(points_progression_playerB) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
             '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
             '''
-            self.player2_prob_label_left.setText(f"Player2 fa punto: NAN")
+            self.playerB_prob_label_left.setText(f"playerB fa punto: NAN")
             return None
         else:
-            X_seq = pad_sequences([points_progression_player2], maxlen=18, padding='post', truncating='post',
+            X_seq = pad_sequences([points_progression_playerB], maxlen=18, padding='post', truncating='post',
                                   value=-1)
             X_global_lstm = np.array([self.lstm_values])
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            ''' Debug LSTM Player2
-            print(f"Sequenza di Punti (LSTM): {points_progression_player2}")
+            ''' Debug LSTM playerB
+            print(f"Sequenza di Punti (LSTM): {points_progression_playerB}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
             '''
-            self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
+            self.playerB_prob_label_left.setText(f"playerB fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
     # Gestisce la pressione dei tasti
@@ -430,12 +430,12 @@ class MainWindow(QWidget):
 
         # Etichette delle probabilità LSTM
         self.current_prob_label_left = QLabel("Probabilità Corrente: NAN")
-        self.player1_prob_label_left = QLabel("Player 1 fa punto: NAN")
-        self.player2_prob_label_left = QLabel("Player 2 fa punto: NAN")
+        self.playerA_prob_label_left = QLabel("Player A fa punto: NAN")
+        self.playerB_prob_label_left = QLabel("Player B fa punto: NAN")
 
         # Aggiungo il titolo e le label al layout del div LSTM
         left_layout.addWidget(title_label_left)
-        for label in [self.current_prob_label_left, self.player1_prob_label_left, self.player2_prob_label_left]:
+        for label in [self.current_prob_label_left, self.playerA_prob_label_left, self.playerB_prob_label_left]:
             label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("""
                 font-size: 14px;
@@ -472,12 +472,12 @@ class MainWindow(QWidget):
         # Etichette delle probabilità Matematiche
         self.current_prob_label = QLabel("Probabilità Corrente: 50%")
         self.current_prob_vant_label = QLabel("Probabilità Corrente: 50%")
-        self.player1_prob_label = QLabel("Player 1 fa punto: 50%")
-        self.player2_prob_label = QLabel("Player 2 fa punto: 50%")
+        self.playerA_prob_label = QLabel("Player A fa punto: 50%")
+        self.playerB_prob_label = QLabel("Player B fa punto: 50%")
 
 
         text_layout.addWidget(title_label)
-        for label in [self.current_prob_label,self.current_prob_vant_label,  self.player1_prob_label, self.player2_prob_label]:
+        for label in [self.current_prob_label,self.current_prob_vant_label,  self.playerA_prob_label, self.playerB_prob_label]:
             label.setAlignment(Qt.AlignCenter)
             label.setStyleSheet("""
                 font-size: 14px;
@@ -549,8 +549,8 @@ class MainWindow(QWidget):
         y2_values = [score[1] for score in self.scores]
 
         # Disegna le linee
-        self.axes.plot(x_values, y1_values, label="Player 1", marker = 'o', color="#013FB3")
-        self.axes.plot(x_values, y2_values, label="Player 2", marker='o', color="#FF6600")
+        self.axes.plot(x_values, y1_values, label="Player A", marker = 'o', color="#013FB3")
+        self.axes.plot(x_values, y2_values, label="Player B", marker='o', color="#FF6600")
         self.axes.set_xticks(range(len(self.scores)))
         max_score = max(max(y1_values), max(y2_values))
         self.axes.set_yticks(range(0, max_score + 1, max(1, max_score // 5)))
@@ -571,8 +571,8 @@ class MainWindow(QWidget):
         p = 0.5  # Probabilità di vincere un punto
         value1 = int(self.label1.text())  # Punti vinti dal giocatore
         value2 = int(self.label2.text())  # Punti vinti dall'avversario
-        lstm_scenario1 = None # Probabilità di vincita nel caso player1 fa punto
-        lstm_scenario2 = None # Probabilità di vincita nel caso player2 fa punto
+        lstm_scenario1 = None # Probabilità di vincita nel caso playerA fa punto
+        lstm_scenario2 = None # Probabilità di vincita nel caso playerB fa punto
 
         # Caso speciale: Se value1 == 11, la probabilità è 1
         if value1 == 11:
@@ -678,8 +678,8 @@ class MainWindow(QWidget):
                                            textcoords="offset points", xytext=(10,-3), ha='left', color="green")
             self.axes_probability.annotate(f"{prob_scenario2:.4f}", (future_x, prob_scenario2),
                                            textcoords="offset points", xytext=(10,-3), ha='left', color="red")
-            self.player1_prob_label.setText(f"Player 1 fa punto: {prob_scenario1 * 100:.4f}%")
-            self.player2_prob_label.setText(f"Player 2 fa punto: {prob_scenario2 * 100:.4f}%")
+            self.playerA_prob_label.setText(f"Player A fa punto: {prob_scenario1 * 100:.4f}%")
+            self.playerB_prob_label.setText(f"Player B fa punto: {prob_scenario2 * 100:.4f}%")
 
         total_points = value1 + value2
         half_visible = 5  # Range minimo visibile
@@ -734,7 +734,7 @@ class MainWindow(QWidget):
         total = p ** (10 - x) * math.comb(20 - x - y, 10 - x) * (1 - p) ** (10 - y)
         return total
 
-    # Funzione per incrementare lo score del player1
+    # Funzione per incrementare lo score del playerA
     def increment_label1(self):
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
@@ -755,7 +755,7 @@ class MainWindow(QWidget):
             self.update_graph()
             self.update_probability_graph()
 
-    # Funzione per incrementare lo score del player2
+    # Funzione per incrementare lo score del playerB
     def increment_label2(self):
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
