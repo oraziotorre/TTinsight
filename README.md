@@ -59,80 +59,78 @@ The general structure of the **TTinsight** project is as follows:
 
 <h3>Breve Descrizione dei File Principali</h3>
 
-<h3>Breve Descrizione dei File Principali</h3>
 <div style="font-family: monospace; padding: 10px; margin-bottom: 20px;">
   <ul>
-    <li><strong>data/</strong>:
+    <li><strong>data/</strong>
       <ul>
-        <li><strong>additional_data</strong>:
+        <li><strong>additional_data</strong>
           <ul>
-            <li><strong>players_metadata.tsv</strong>: Contains information about players such as their ID and nationality, which have not yet been incorporated into our project but may be added later.</li>
-            <li><strong>tournaments_metadata.tsv</strong>: Similar to players_metadata.tsv, it contains information that is not currently relevant to the problem at hand.</li>
+            <li><code>players_metadata.tsv</code>: Contains player IDs and nationality, <em>not yet included in the project but may be added later.</em></li>
+            <li><code>tournaments_metadata.tsv</code>: Holds metadata <em>not relevant for the current analysis.</em></li>
           </ul>
         </li>
-        <li><strong>datasets</strong>:
+        <li><strong>datasets</strong>
           <ul>
-            <li><strong>cleaned_dataset.csv</strong>: This dataset is used for training and testing the model. It is derived from various modifications made to the raw dataset. The fields it contains include:
-            </li>
-            <li><strong>raw_dataset.csv</strong>: The raw dataset obtained from various matches played. It contains several inaccurate or unnecessary features that need to be modified.</li>
+            <li><code>cleaned_dataset.csv</code>: Used for model training and testing, <em>derived from modifications made to the raw dataset.</em> Contains relevant match data.</li>
+            <li><code>raw_dataset.csv</code>: Initial dataset with inaccuracies and irrelevant features that need to be cleaned and adjusted.</li>
           </ul>
         </li>
-        <li><strong>models/</strong>:
+        <li><strong>models/</strong>
           <ul>
-            <li><strong>LogReg.pkl</strong>:
-              <p>This model predicts match set outcomes (win/loss) based on features like scores and match dynamics.</p>
-              <p><strong>Training:</strong> Logistic Regression is used with standardized data.</p>
-              <p><strong>Evaluation:</strong> Cross-validation checks Log Loss and Brier Score for performance.</p>
-              <p><strong>Hyperparameter Tuning:</strong> <code>GridSearchCV</code> optimizes parameters (e.g., regularization strength) based on Log Loss.</p>
-              <p><strong>Saving:</strong> The best model is saved as a <code>.pkl</code> file for future predictions.</p>
+            <li><code>LogReg.pkl</code>: 
+              <p>Predicts match set outcomes (<em>win/loss</em>) based on scores and match dynamics.</p>
+              <p><strong>Training:</strong> Logistic Regression on standardized data.</p>
+              <p><strong>Evaluation:</strong> Cross-validation with Log Loss and Brier Score for performance check.</p>
+              <p><strong>Hyperparameter Tuning:</strong> Optimized using GridSearchCV with regularization and solver adjustments.</p>
+              <p><strong>Saving:</strong> Best model saved as a <code>.pkl</code> file for future predictions.</p>
             </li>
-            <li><strong>LSTM.keras</strong>:
-              <p>This LSTM model captures temporal dependencies in match sequences, which logistic regression couldn’t handle. It uses point progression sequences (<code>points_progression</code>) and two global features (<code>final_set_a</code>, <code>final_set_b</code>) for prediction.</p>
-              <p><strong>Data Preparation:</strong> Sequences are padded to a fixed length of 18, and global features are combined for context.</p>
-               <ul>
-                  <li><strong>LSTM Layers:</strong> Process the sequence of points.</li>
-                  <li><strong>Dense Layer:</strong> Integrates the global features.</li>
-                  <li><strong>Dropout Layer:</strong> Outputs are combined and passed through a Dropout layer before the final Dense layer with a sigmoid activation for binary classification.</li>
-                </ul>
-              </p>
-              <p><strong>Training and Evaluation:</strong> The model is trained for 20 epochs with binary cross-entropy loss, and evaluated using Log Loss and Brier Score.</p>
-              <p><strong>Testing:</strong> The model correctly identifies comeback situations as negative, unlike the logistic regression model, showcasing its ability to capture time-dependent dynamics.</p>
+            <li><code>LSTM.keras</code>: 
+              <p>Captures temporal match dynamics, predicting outcomes from point sequences and global features.</p>
+              <p><strong>Data Preparation:</strong> Sequences padded to a fixed length and global features integrated.</p>
+              <ul>
+                <li><strong>LSTM Layers:</strong> Handle point sequences.</li>
+                <li><strong>Dense Layer:</strong> Combine global features.</li>
+                <li><strong>Dropout Layer:</strong> Prevents overfitting, followed by final Dense layer with sigmoid for binary classification.</li>
+              </ul>
+              <p><strong>Training and Evaluation:</strong> 20 epochs, binary cross-entropy loss, evaluated with Log Loss and Brier Score.</p>
+              <p><strong>Testing:</strong> Detects comeback scenarios <em>effectively, unlike Logistic Regression.</em></p>
             </li>
           </ul>
         </li>
-        <li><strong>data_preprocessing/</strong>:
+        <li><strong>data_preprocessing/</strong>
           <ul>
-            <li><strong>dataset-generator.py</strong>:
-              <p>This program processes match logs from a tournament, validates scores, and creates a dataset for analysis.</p>
-              <p><strong>check_points_error:</strong> Validates scores for consistency, ensuring minimum points and correct score differences.</p>
-              <p><strong>points_transformer:</strong> Converts a player's scores into frequency sequences.</p>
-              <p><strong>process_match_log:</strong> Reads a match's log, validates the scores, and prepares data for the dataset.</p>
-              <p><strong>process_file:</strong> Reads tournament files, associates match scores, and prepares the data.</p>
-              <p><strong>main:</strong> Processes all tournament files and generates a final CSV dataset with valid match data.</p>
-              <p>The goal is to clean and create a comprehensive dataset for match analysis.</p>
+            <li><code>dataset-generator.py</code>
+              <p>Processes match logs, validates scores, and creates a cleaned dataset for analysis.</p>
+              <ul>
+                <li><em>Validates scores ensuring minimum standards and valid score differences.</em></li>
+                <li>Transforms player scores into frequency sequences.</li>
+                <li>Reads match logs, validates scores, and prepares data for analysis.</li>
+                <li>Handles tournament data, associating match scores with details.</li>
+                <li>Processes all tournament files, generating a final CSV dataset with valid match data.</li>
+              </ul>
             </li>
-            <li><strong>downloader-scores.py</strong>:
-              <p>This program asynchronously scrapes match data from a website using Playwright. It processes TSV files containing event IDs and document codes, navigates to the corresponding match pages, interacts with the page to gather game data, and logs relevant console messages.</p>
-              <p><strong>get_console_logs:</strong> Navigates to a match URL, interacts with buttons for game data, and collects console logs.</p>
-              <p><strong>process_files:</strong> Reads TSV files, extracts event IDs, and calls get_console_logs for each event.</p>
-              <p><strong>main:</strong> Launches the browser, processes files, and closes the browser once done.</p>
-              <p>The logs are saved to text files for later use.</p>
+            <li><code>dowloader-scores.py</code>
+              <p>Scrapes match data asynchronously, gathering game details from a website and logging console output.</p>
+              <ul>
+                <li>Interacts with the webpage, collects game data, and logs relevant details.</li>
+                <li>Processes event IDs from TSV files, extracting match data from the website.</li>
+                <li><em>Launches the scraper, processes files, and saves the logs for future use.</em></li>
+              </ul>
             </li>
           </ul>
         </li>
       </ul>
     </li>
-    <li><strong>TTinsight/</strong>:
+    <li><strong>TTinsight/</strong>
       <ul>
-        <li><strong>TTinsight_DataPreprocessing.ipynb</strong>: A colab notebook that demonstrates the steps for cleaning, transforming, and preparing data for training.</li>
-        <li><strong>TTinsight_ModelDevelopment.ipynb</strong>: A colab notebook containing scripts for training, evaluating, and fine-tuning the model.</li>
+        <li><code>TTinsight_DataPreprocessing.ipynb</code>: Colab notebook showing steps for data cleaning and transformation.</li>
+        <li><code>TTinsight_ModelDevelopment.ipynb</code>: Colab notebook for model training, evaluation, and fine-tuning.</li>
       </ul>
     </li>
-    <li><strong>README.md</strong>: The main documentation file that provides an overview of the project, installation instructions, and usage guidelines.</li>
-    <li><strong>requirements.txt</strong>: A file listing all the dependencies required for running the project.</li>
+    <li><code>README.md</code>: Documentation with project overview, installation, and usage instructions.</li>
+    <li><code>requirements.txt</code>: Lists dependencies required to run the project.</li>
   </ul>
 </div>
-
 
 
 
