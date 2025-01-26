@@ -47,35 +47,94 @@ The general structure of the **TTinsight** project is as follows:
 │       ├── ...
 ├── data_preprocessing
 │   ├── dataset-generator.py
-│   ├── downloader-scores.py
-│   └── TTinsight_DataPreprocessing.ipynb
+│   └── downloader-scores.py
 ├── gui
 │   ├── gui-test.py
 │   └── TTinsight_GUI_explanation.png
-├── model_developmen
-│   └── TTinsight_ModelDevelopment.ipynb 
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+├── TTinsight_DataPreprocessing.ipynb
+└── TTinsight_ModelDevelopment.ipynb
 ```
 
 <h3>Breve Descrizione dei File Principali</h3>
 
+<h3>Breve Descrizione dei File Principali</h3>
 <div style="font-family: monospace; padding: 10px; margin-bottom: 20px;">
   <ul>
     <li><strong>data/</strong>:
       <ul>
-        <li><strong>additional_data</strong>: Contains player_metadata.tsv and tournament_metadata.tsv, which include additional information that will be implemented in the future in our project.</li>
-        <li><strong>datasets</strong>: Preprocessed or raw data used for training the model.</li>
-        <li><strong>matches</strong>: Data and information related to individual matches.</li>
-        <li><strong>models</strong>: Saved machine learning models.</li>
-        <li><strong>tournaments</strong>: Data related to various tournaments.</li>
+        <li><strong>additional_data</strong>:
+          <ul>
+            <li><strong>players_metadata.tsv</strong>: Contains information about players such as their ID and nationality, which have not yet been incorporated into our project but may be added later.</li>
+            <li><strong>tournaments_metadata.tsv</strong>: Similar to players_metadata.tsv, it contains information that is not currently relevant to the problem at hand.</li>
+          </ul>
+        </li>
+        <li><strong>datasets</strong>:
+          <ul>
+            <li><strong>cleaned_dataset.csv</strong>: This dataset is used for training and testing the model. It is derived from various modifications made to the raw dataset. The fields it contains include:
+            </li>
+            <li><strong>raw_dataset.csv</strong>: The raw dataset obtained from various matches played. It contains several inaccurate or unnecessary features that need to be modified.</li>
+          </ul>
+        </li>
+        <li><strong>models/</strong>:
+          <ul>
+            <li><strong>LogReg.pkl</strong>:
+              <p>This model predicts match set outcomes (win/loss) based on features like scores and match dynamics.</p>
+              <p><strong>Training:</strong> Logistic Regression is used with standardized data.</p>
+              <p><strong>Evaluation:</strong> Cross-validation checks Log Loss and Brier Score for performance.</p>
+              <p><strong>Hyperparameter Tuning:</strong> <code>GridSearchCV</code> optimizes parameters (e.g., regularization strength) based on Log Loss.</p>
+              <p><strong>Saving:</strong> The best model is saved as a <code>.pkl</code> file for future predictions.</p>
+            </li>
+            <li><strong>LSTM.keras</strong>:
+              <p>This LSTM model captures temporal dependencies in match sequences, which logistic regression couldn’t handle. It uses point progression sequences (<code>points_progression</code>) and two global features (<code>final_set_a</code>, <code>final_set_b</code>) for prediction.</p>
+              <p><strong>Data Preparation:</strong> Sequences are padded to a fixed length of 18, and global features are combined for context.</p>
+               <ul>
+                  <li><strong>LSTM Layers:</strong> Process the sequence of points.</li>
+                  <li><strong>Dense Layer:</strong> Integrates the global features.</li>
+                  <li><strong>Dropout Layer:</strong> Outputs are combined and passed through a Dropout layer before the final Dense layer with a sigmoid activation for binary classification.</li>
+                </ul>
+              </p>
+              <p><strong>Training and Evaluation:</strong> The model is trained for 20 epochs with binary cross-entropy loss, and evaluated using Log Loss and Brier Score.</p>
+              <p><strong>Testing:</strong> The model correctly identifies comeback situations as negative, unlike the logistic regression model, showcasing its ability to capture time-dependent dynamics.</p>
+            </li>
+          </ul>
+        </li>
+        <li><strong>data_preprocessing/</strong>:
+          <ul>
+            <li><strong>dataset-generator.py</strong>:
+              <p>This program processes match logs from a tournament, validates scores, and creates a dataset for analysis.</p>
+              <p><strong>check_points_error:</strong> Validates scores for consistency, ensuring minimum points and correct score differences.</p>
+              <p><strong>points_transformer:</strong> Converts a player's scores into frequency sequences.</p>
+              <p><strong>process_match_log:</strong> Reads a match's log, validates the scores, and prepares data for the dataset.</p>
+              <p><strong>process_file:</strong> Reads tournament files, associates match scores, and prepares the data.</p>
+              <p><strong>main:</strong> Processes all tournament files and generates a final CSV dataset with valid match data.</p>
+              <p>The goal is to clean and create a comprehensive dataset for match analysis.</p>
+            </li>
+            <li><strong>downloader-scores.py</strong>:
+              <p>This program asynchronously scrapes match data from a website using Playwright. It processes TSV files containing event IDs and document codes, navigates to the corresponding match pages, interacts with the page to gather game data, and logs relevant console messages.</p>
+              <p><strong>get_console_logs:</strong> Navigates to a match URL, interacts with buttons for game data, and collects console logs.</p>
+              <p><strong>process_files:</strong> Reads TSV files, extracts event IDs, and calls get_console_logs for each event.</p>
+              <p><strong>main:</strong> Launches the browser, processes files, and closes the browser once done.</p>
+              <p>The logs are saved to text files for later use.</p>
+            </li>
+          </ul>
+        </li>
       </ul>
     </li>
-    <li><strong>data_preprocessing/</strong>: Scripts used for cleaning and preparing data, as well as feature extraction.</li>
-    <li><strong>gui/</strong>: Graphical user interface files, providing a front-end for interacting with the system and visualizing predictions.</li>
-    <li><strong>model_development/</strong>: Contains the code for developing the machine learning model, including training and evaluation scripts.</li>
+    <li><strong>TTinsight/</strong>:
+      <ul>
+        <li><strong>TTinsight_DataPreprocessing.ipynb</strong>: A colab notebook that demonstrates the steps for cleaning, transforming, and preparing data for training.</li>
+        <li><strong>TTinsight_ModelDevelopment.ipynb</strong>: A colab notebook containing scripts for training, evaluating, and fine-tuning the model.</li>
+      </ul>
+    </li>
+    <li><strong>README.md</strong>: The main documentation file that provides an overview of the project, installation instructions, and usage guidelines.</li>
+    <li><strong>requirements.txt</strong>: A file listing all the dependencies required for running the project.</li>
   </ul>
 </div>
+
+
+
 
 
 ---
