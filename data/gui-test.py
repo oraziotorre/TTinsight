@@ -74,7 +74,9 @@ class MainWindow(QWidget):
         num_ones = self.points_progression.count(1)
         num_zeros = self.points_progression.count(0)
         if len(self.points_progression) > 18 or len(self.points_progression) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
+            '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
+            '''
             self.current_prob_label_left.setText(f"Punteggio Corrente: NAN")
             return None
         else:
@@ -84,12 +86,13 @@ class MainWindow(QWidget):
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Debug LSTM Corrente
+            ''' Debug LSTM
             print(f"Sequenza di Punti (LSTM): {self.points_progression}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
+            '''
             self.current_prob_label_left.setText(f"Punteggio Corrente: {y_pred_prob_lstm[0][0] * 100:.4f}%")
 
     # Predizione quando ci troviamo nel caso in cui player1 fa punto a partire dal punteggio corrente
@@ -99,7 +102,9 @@ class MainWindow(QWidget):
         num_ones = points_progression_player1.count(1)
         num_zeros = points_progression_player1.count(0)
         if len(points_progression_player1) > 18 or len(points_progression_player1) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
+            '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
+            '''
             self.player1_prob_label_left.setText(f"Player1 fa punto: NAN")
             return None
         else:
@@ -109,12 +114,13 @@ class MainWindow(QWidget):
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Debug LSTM Player1
+            ''' Debug LSTM Player1
             print(f"Sequenza di Punti (LSTM): {points_progression_player1}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
-            print("-" * 50)
+            print("-" * 50) '''
+
             self.player1_prob_label_left.setText(f"Player1 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
@@ -125,7 +131,9 @@ class MainWindow(QWidget):
         num_ones = points_progression_player2.count(1)
         num_zeros = points_progression_player2.count(0)
         if len(points_progression_player2) > 18 or len(points_progression_player2) < 7 or abs(num_ones - num_zeros) > 3 or num_ones == 10 or num_zeros == 10:
+            '''Caso in cui le condizioni non sono verificate
             print("Non possibile")
+            '''
             self.player2_prob_label_left.setText(f"Player2 fa punto: NAN")
             return None
         else:
@@ -135,12 +143,13 @@ class MainWindow(QWidget):
             y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
-            # Debug LSTM Player2
+            ''' Debug LSTM Player2
             print(f"Sequenza di Punti (LSTM): {points_progression_player2}")
             print(f"Caratteristiche Globali (LSTM): {self.lstm_values}")
             print(f"Probabilità previste (LSTM): {y_pred_prob_lstm[0][0]:.4f}")
             print(f"Predizione (LSTM - classe): {y_pred_lstm[0]}")
             print("-" * 50)
+            '''
             self.player2_prob_label_left.setText(f"Player2 fa punto: {y_pred_prob_lstm[0][0] * 100:.4f}%")
             return y_pred_prob_lstm[0][0]
 
@@ -218,7 +227,9 @@ class MainWindow(QWidget):
     def update_lstm_values(self):
         self.lstm_values[0] = 1 if self.utente_radio_true.isChecked() else 0
         self.lstm_values[1] = 1 if self.avversario_radio_true.isChecked() else 0
+        '''Debug per verificare che i radio button funzionino 
         print(f"Updated lstm_values: {self.lstm_values}")
+        '''
 
     # Inserimento di un altro div al di sotto del contenitore dei form
     def add_left_div(self, layout):
@@ -727,12 +738,19 @@ class MainWindow(QWidget):
     def increment_label1(self):
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
+        '''Verifica del corretto funzionamento della funzione 
         print(f"Incrementing label1. Current values: label1 = {value1}, label2 = {value2}")
+        '''
         if value1 < 11 and value1 + value2 < 20 and value2 < 11:
             self.label1.setText(str(value1 + 1))
             self.scores.append([value1 + 1, value2])
+            '''Verifica del corretto funzionamento della funzione 
+            print(f"label1 incremented. Current values: label1 = {value1}, label2 = {value2}")
+            '''
             self.points_progression.append(1)  # Aggiungi 1 per incrementare il comeback
+            '''
             print(f"Appended 1 to points_progression: {self.points_progression}")
+            '''
             self.pred1()
             self.update_graph()
             self.update_probability_graph()
@@ -741,26 +759,36 @@ class MainWindow(QWidget):
     def increment_label2(self):
         value1 = int(self.label1.text())
         value2 = int(self.label2.text())
+        '''Verifica del corretto funzionamento della funzione 
         print(f"Incrementing label2. Current values: label1 = {value1}, label2 = {value2}")
+        '''
         if value2 < 11 and value1 + value2 < 20 and value1 < 11:
             self.label2.setText(str(value2 + 1))
             self.scores.append([value1, value2 + 1])
+            '''Verifica del corretto funzionamento della funzione 
+            print(f"label2 incremented. Current values: label1 = {value1}, label2 = {value2}")
+            '''
             self.points_progression.append(0)
+            '''
             print(f"Appended 0 to points_progression: {self.points_progression}")
+            '''
             self.pred1()
             self.update_graph()
             self.update_probability_graph()
 
     # Funzione per poter reiniziare da capo
     def reset_labels(self):
+        '''Verifica del corretto funzionamento della funzione
         print("Resetting labels...")
+        '''
         self.label1.setText("0")
         self.label2.setText("0")
         self.probabilities = []
         self.points_progression = []
         self.scores = [[0, 0]]
         self.pred1()
-        print(f"points_progression reset: {self.points_progression}")
+        '''
+        print(f"points_progression reset: {self.points_progression}") '''
         self.update_graph()
         self.update_probability_graph()
 
@@ -769,8 +797,10 @@ class MainWindow(QWidget):
         if len(self.scores) > 1:
             self.scores.pop() # Rimozione dell'ultimo scores valore inserito
             self.points_progression.pop() # Rimozione dell'ultimo elemento nella progressione dello score
+            ''' Verifica delle rimozioni eseguite con successo
             print(f"Removed last score. Current scores: {self.scores}")
             print(f"Removed last point from points_progression. Current points_progression: {self.points_progression}")
+            '''
             self.pred1()
             last_score = self.scores[-1]
             self.label1.setText(str(last_score[0]))
