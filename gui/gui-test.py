@@ -83,7 +83,7 @@ class MainWindow(QWidget):
             X_seq = pad_sequences([self.points_progression], maxlen=18, padding='post', truncating='post',
                                   value=-1)
             X_global_lstm = np.array([self.lstm_values])
-            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm],verbose=0)
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
             ''' Debug LSTM
@@ -111,7 +111,7 @@ class MainWindow(QWidget):
             X_seq = pad_sequences([points_progression_playerA], maxlen=18, padding='post', truncating='post',
                                   value=-1)
             X_global_lstm = np.array([self.lstm_values])
-            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm],verbose=0)
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
             ''' Debug LSTM playerA
@@ -140,7 +140,7 @@ class MainWindow(QWidget):
             X_seq = pad_sequences([points_progression_playerB], maxlen=18, padding='post', truncating='post',
                                   value=-1)
             X_global_lstm = np.array([self.lstm_values])
-            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm])
+            y_pred_prob_lstm = self.model_lstm.predict([X_seq, X_global_lstm],verbose=0)
             y_pred_lstm = (y_pred_prob_lstm > 0.5).astype(int)
 
             ''' Debug LSTM playerB
