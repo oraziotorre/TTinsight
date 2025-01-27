@@ -153,7 +153,7 @@ To run this project, you need to have the following installed:
 
 <div>
   <ul>
-    <li><strong>Python 3.11</strong> (or higher)</li>
+    <li><strong>Python 3.11</strong></li>
     <li><strong>pip</strong> for dependency management</li>
     <li><strong>A virtual environment</strong> (to manage dependencies in an isolated environment)</li>
     <li><strong>An IDE</strong> like <strong>PyCharm</strong>, <strong>Visual Studio Code</strong>, or any other preferred environment.</li>
@@ -267,6 +267,10 @@ If you encounter errors related to incompatible library versions, make sure you 
 ### 2. **Permission Errors**
 
 If you get permission-related errors (e.g., `PermissionError`) while installing libraries, try using `sudo` on macOS/Linux or running as an administrator on Windows.
+
+### 3. **Not Loading**
+
+If you encounter problem with the demo not showing up you may try restarting your IDE
 
 ---
 
