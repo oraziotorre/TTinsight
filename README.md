@@ -4,7 +4,9 @@
   <img src="https://github.com/user-attachments/assets/65354228-520d-400d-aeeb-59dc69f6a848" alt="TTinsight logo" width="250">
 </div>
 
-**TTinsight** is an advanced system for predicting table tennis set outcomes. It leverages sequential LSTM neural networks to analyze score progression patterns and deliver accurate set result predictions.
+TTinsight is a project that leverages advanced machine learning models to predict, in real time, the probability of a player winning or losing a table tennis set by analyzing the score progression up to that point.
+
+Unlike other studies that aim to predict the probability of winning the entire match based on historical statistics of the athletes, our goal is to monitor the progression of the ongoing set and calculate the real-time probability of victory using only the data related to the points scored up to that moment.
 
 ---
 
@@ -17,8 +19,6 @@
     <li><strong>Data Flexibility</strong>: Compatible with custom score progression datasets.</li>
   </ul>
 </div>
-
-**This project is currently under active development. Features and functionality may change as the system evolves.**
 
 ---
 
