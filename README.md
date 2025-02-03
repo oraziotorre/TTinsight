@@ -1,8 +1,13 @@
 # TTinsight
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/65354228-520d-400d-aeeb-59dc69f6a848" alt="TTinsight logo" width="250">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/65354228-520d-400d-aeeb-59dc69f6a848">
+    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/499fdff7-92d2-4a5b-88c8-10701c5ff2d3">
+    <img src="https://github.com/user-attachments/assets/65354228-520d-400d-aeeb-59dc69f6a848" alt="TTinsight logo" width="250">
+  </picture>
 </div>
+
 
 TTinsight is a project that leverages advanced machine learning models to predict, in real time, the probability of a player winning or losing a table tennis set by analyzing the score progression up to that point.
 
